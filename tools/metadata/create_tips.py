@@ -2,6 +2,8 @@ from base.base_tool import BaseTool
 import base.results
 import base.utils
 from base.method_decorators import input_tableview, input_output_table, parameter
+from collections import OrderedDict
+import os
 
 tool_settings = {"label": "Create Tips",
                  "description": "Create a table of tips from a tip file template",
@@ -14,14 +16,38 @@ class CreateTipFilesMetadataTool(BaseTool):
     def __init__(self):
 
         BaseTool.__init__(self, tool_settings)
-        self.execution_list = [self.iterate]
+        self.execution_list = [self.initialise, self.iterate]
+        self.base_tips = None
+        self.tip_order = []
 
     @input_tableview("geodata_table", "Table of Geodata", False, ["geodata:geodata:"])
-    @parameter("")
+    @parameter("tip_template", "Tip Template", "DEFile", "Required", False, "Input", None, None, None, None, None)
+    @parameter("include_fields", "Include Fields", "DEFile", "Required", True, "Input", None, None, ["tip_template"], None, None)
     @input_output_table
     def getParameterInfo(self):
 
         return BaseTool.getParameterInfo(self)
+
+    def initialise(self):
+
+        if os.path.exists(self.tip_template):
+            with open(self.tip_template, "r") as tipfile:
+                self.base_tips = [line.rstrip() for line in tipfile]
+        else:
+            raise ValueError("Template {0} does not exist".format(self.tip_template))
+
+        if self.base_tips:
+            base_tips = [t for t in self.base_tips if t]
+            k = [x.strip() for x in base_tips[0].split(",")]
+            v = [x.strip() for x in base_tips[1].split(",")]
+            base_tips = zip(k, v)
+            tipt = OrderedDict()
+            for t in base_tips:
+                tipt[t[0]] = t[1]
+            self.base_tips = tipt
+            self.tip_order = ",".join(self.base_tips.iterkeys())
+
+        return
 
     def iterate(self):
 
@@ -35,73 +61,8 @@ class CreateTipFilesMetadataTool(BaseTool):
 
         base.utils.validate_geodata(geodata)
 
-        return
+        self.log.info("Building tips for {0}".format(geodata))
 
-
-# def init(run):
-#     """
-#     Initialise parameters as required for following tool code.
-#
-#     Some run time dictionary objects that remain static are set to globals to
-#     reduce look-ups. In addition to that, in this function we manually set up
-#     the result fields depending on user's choice of output detail
-#     ======== =================================================================
-#     Arg1     run - A dictionary of run-time objects
-#     Return   None
-#     Raises   Nothing explicitly
-#     Effect   Adds some k:v's to the runtime dictionary
-#     ======== =================================================================
-#     """
-#     # localise some dict values that remain static
-#     # tool.info(run)
-#     global tip_template
-#     tip_template = run['tip_template']
-#
-#     global export_fields
-#     export_fields = run['export_fields']
-#
-#     global base_tips
-#     base_tips = None
-#     if tip_template and tool.geodata_exists(tip_template):
-#         with open(tip_template, "r") as tipfile:
-#             base_tips = [line.rstrip() for line in tipfile]
-#     else:
-#         tool.info("Template {0} does not exist".format(tip_template))
-#
-#     global tip_order
-#     tip_order = []
-#     if base_tips:
-#         base_tips = [t for t in base_tips if t]
-#         k = [x.strip() for x in base_tips[0].split(",")]
-#         v = [x.strip() for x in base_tips[1].split(",")]
-#         base_tips = zip(k, v)
-#         tipt = OrderedDict()
-#         for t in base_tips:
-#             tipt[t[0]] = t[1]
-#         base_tips = tipt
-#         tip_order = ",".join(base_tips.iterkeys())
-#         # tool.info(base_tips)
-
-
-# def build(run):
-#     """
-#     Clip raster based on current run parameters.
-#
-#     #Clip_management (in_raster, rectangle, out_raster, {in_template_dataset},
-#     #                                      {nodata_value}, {clipping_geometry})
-#     ======== ===================================================================
-#     Arg1     run - A dictionary of run-time objects
-#     Return   None
-#     Raises   None
-#     Effect   A new dataset that is a clip of the original
-#     ======== ===================================================================
-#      """
-#     # tool.info(run)
-#     geodata = run["item_row"][run["item_row_fields"].index("item")]
-#     # tip_file = run["item_row"][run["item_row_fields"].index("tip_file")]
-#
-#     tool.info("Building tips for {0}".format(geodata))
-#
 #     global base_tips
 #
 #     # curr_tips = None

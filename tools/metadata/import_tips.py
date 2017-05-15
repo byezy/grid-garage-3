@@ -6,7 +6,7 @@ from base.method_decorators import input_tableview, input_output_table
 tool_settings = {"label": "Import Tips",
                  "description": "Create a table of tips from existing tip files",
                  "can_run_background": "True",
-                 "category": "Metadata"}
+                 "category": ["Metadata"]}
 
 
 @base.results.result

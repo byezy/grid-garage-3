@@ -7,7 +7,7 @@ import arcpy
 
 
 tool_settings = {"label": "Copy",
-                 "description": "Copies...",
+                 "description": "Copies feature datasets",
                  "can_run_background": "True",
                  "category": "Feature"}
 

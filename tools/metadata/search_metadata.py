@@ -5,12 +5,11 @@ from base.method_decorators import input_tableview, input_output_table
 import arcpy
 import os
 from collections import OrderedDict
-# from StringIO import StringIO
 
 tool_settings = {"label": "Search",
                  "description": "Search for metadata",
                  "can_run_background": "True",
-                 "category": "Metadata TODO"}
+                 "category": "Metadata"}
 
 
 @base.results.result
