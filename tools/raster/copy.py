@@ -1,6 +1,6 @@
-import base.base_tool
-import base.results
-from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, raster_formats, pixel_type, raster_formats2, input_output_raster_format
+from base.base_tool import BaseTool
+from base import results
+from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, raster_formats, pixel_type, raster_formats2
 import arcpy
 import base.utils
 
@@ -11,12 +11,12 @@ tool_settings = {"label": "Copy",
                  "category": "Raster"}
 
 
-@base.results.result
-class CopyRasterTool(base.base_tool.BaseTool):
+@results.result
+class CopyRasterTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.iterate]
 
         return
@@ -32,26 +32,10 @@ class CopyRasterTool(base.base_tool.BaseTool):
     @parameter("RGB_to_Colormap", "RGB to Colourmap", "GPString", "Optional", False, "Input", ["NONE", "RGBToColormap"], None, None, None, "Options")
     @parameter("format", "Output Raster Format", "GPString", "Optional", False, "Input", raster_formats2, None, None, None, "Options")
     @parameter("transform", "Transform", "GPString", "Optional", False, "Input", None, None, None, None, "Options")
-    @parameter("raster_format", "Format for output rasters", "GPString", "Required", False, "Input", raster_formats, None, None, raster_formats[0])
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
-
-    # def initialise(self):
-    #     # p = self.get_parameter_dict()
-    #     # self.config_keyword = p["config_keyword"] if p["config_keyword"] else "#"
-    #     # self.background_value = p["background_value"] if p["background_value"] else "#"
-    #     # self.nodata_value = p["nodata_value"] if p["nodata_value"] else "#"
-    #     # self.onebit_to_eightbit = p["onebit_to_eightbit"] if p["onebit_to_eightbit"] else "NONE"
-    #     # self.colormap_to_RGB = p["colormap_to_RGB"] if p["colormap_to_RGB"] else "NONE"
-    #     # self.pixel_type = p["pixel_type"] if p["pixel_type"] else "#"
-    #     # self.scale_pixel_value = p["scale_pixel_value"] if p["scale_pixel_value"] else "NONE"
-    #     # self.RGB_to_Colormap = p["RGB_to_Colormap"] if p["RGB_to_Colormap"] else "NONE"
-    #     # self.format = p["format"] if p["format"] else ""
-    #     # self.transform = p["transform"] if p["transform"] else "#"
-    #
-    #     return
+        return BaseTool.getParameterInfo(self)
 
     def iterate(self):
 
@@ -64,10 +48,10 @@ class CopyRasterTool(base.base_tool.BaseTool):
         ras = data["raster"]
 
         base.utils.validate_geodata(ras, raster=True)
-        ras_out = base.utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
+        ras_out = base.utils.make_raster_name(ras, self.result.output_workspace, prefix=self.output_filename_prefix, suffix=self.output_filename_suffix)
 
         self.log.info("Copying {0} -->> {1} ...".format(ras, ras_out))
-        arcpy.CopyRaster_management(ras, ras_out, self.config_keyword, self.background_value, self.nodata_value, self.onebit_to_eightbit, self.colormap_to_RGB, self.pixel_type, self.scale_pixel_value, self.RGB_to_Colormap, self.format, self.transform)
+        arcpy.CopyRaster_management(ras, ras_out, self.config_keyword, self.background_value, self.nodata_value, self.onebit_to_eightbit, self.colormap_to_RGB, self.pixel_type, self.scale_pixel_value, self.RGB_to_Colormap, self.raster_format, self.transform)
 
         self.result.add({"geodata": ras_out, "source_geodata": ras})
 

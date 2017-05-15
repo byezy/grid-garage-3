@@ -2,7 +2,7 @@ import base.base_tool
 import base.results
 from base.method_decorators import input_output_table, parameter
 from base.utils import datatype_list, walk
-tool_settings = {"label": "Search",
+tool_settings = {"label": "Search for Geodata",
                  "description": "Search for identifiable geodata",
                  "can_run_background": "True",
                  "category": "Geodata"}

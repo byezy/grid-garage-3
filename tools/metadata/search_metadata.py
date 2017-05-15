@@ -1,18 +1,19 @@
 from base.base_tool import BaseTool
-import base.results
-import base.utils
+from base import results
+from base import utils
 from base.method_decorators import input_tableview, input_output_table
 import arcpy
 import os
 from collections import OrderedDict
 
-tool_settings = {"label": "Search",
-                 "description": "Search for metadata",
+
+tool_settings = {"label": "Search for Metadata",
+                 "description": "Search for identifiable metadata",
                  "can_run_background": "True",
                  "category": "Metadata"}
 
 
-@base.results.result
+@results.result
 class SearchMetadataTool(BaseTool):
     def __init__(self):
         BaseTool.__init__(self, tool_settings)
@@ -34,17 +35,16 @@ class SearchMetadataTool(BaseTool):
 
         geodata = data["geodata"]
 
-        base.utils.validate_geodata(geodata)
+        utils.validate_geodata(geodata)
 
-       # get the current name elements
-        basename = os.path.split(geodata)[0]
+        gd_path,  basename, gd_name, gd_ext = utils.split_up_filename(geodata)[0]
 
-        self.log.info("Analysing {0}".format(geodata))
+        self.log.info("Searching {0}".format(geodata))
 
         desc = arcpy.Describe(geodata)
         arc_retrieved = desc.metadataRetrieved
 
-        xml_file = basename + ".xml"
+        xml_file = os.path.join(gd_path, basename + ".xml")
         xml = None
         if os.path.exists(xml_file):
             with open(xml_file, "r") as xmlfile:
@@ -52,7 +52,7 @@ class SearchMetadataTool(BaseTool):
         else:
             xml_file = "{0} does not exist".format(xml_file)
 
-        html_file = basename + ".html"
+        html_file = os.path.join(gd_path, basename + ".html")
         html = None
         if os.path.exists(html_file):
             with open(html_file, "r") as htmlfile:
@@ -60,21 +60,14 @@ class SearchMetadataTool(BaseTool):
         else:
             html_file = "{0} does not exist".format(html_file)
 
-        pdf_file = basename + ".html"
-        # pdf = None
+        pdf_file = os.path.join(gd_path, basename + ".pdf")
+        pdf = None
         if os.path.exists(pdf_file):
-            pass
-            # with open(pdf_file, "r") as htmlfile:
-            #     html = "".join(line.rstrip() for line in htmlfile)
+            pass  # not now
         else:
-            html_file = "{0} does not exist".format(html_file)
+            pdf_file = "{0} does not exist".format(html_file)
 
-        # # Read each line of the PDF
-        # pdfContent = StringIO(getPDFContent("test.pdf").encode("ascii", "ignore"))
-        # for line in pdfContent:
-        #     doSomething(line.strip())
-
-        tip_file = basename + ".tip"
+        tip_file = os.path.join(gd_path, basename + ".tip")
         tip = None
         if os.path.exists(tip_file):
             # lines = [line.rstrip() for line in open(tip_file)]
@@ -121,11 +114,10 @@ class SearchMetadataTool(BaseTool):
             else:
                 tip_file = "{0} does not exist".format(tip_file)
 
-        self.result.add({"geodata": geodata, "arc_retrieved": arc_retrieved, "tip_file": tip_file, "tip": tip, "xml_file": xml_file, "xml": xml, "html_file": html_file, "html": html, "pdf_file": pdf_file})
+        self.result.add({"geodata": geodata, "arc_retrieved": arc_retrieved,
+                         "tip_file": tip_file, "tip": tip, "xml_file": xml_file, "xml": xml,
+                         "html_file": html_file, "html": html, "pdf_file": pdf_file})
 
         return
-        # return {"item": geodata, "metadata": "to do",
-        #         "arc_retrieved": arc_retrieved, "xml_file": xml_file,
-        #          "xml": xml, "tip_file": tip_file, "tip": tip}
 
 
