@@ -297,7 +297,7 @@ class BaseTool(object):
     #     return pn
 
     @base.log.log
-    def iterate_function_on_tableview(self, func, parameter_name, key_names):
+    def iterate_function_on_tableview(self, func, parameter_name, key_names, nonkey_names=None):
         """ Runs a function over the values in a tableview parameter - a common tool scenario
 
         Args:
@@ -323,7 +323,7 @@ class BaseTool(object):
         gg_in_table = "gg_in_table"
         if arcpy.Exists(gg_in_table):
             arcpy.Delete_management(gg_in_table)
-        arcpy. MakeTableView_management(gg_in_table_text, gg_in_table)
+        arcpy.MakeTableView_management(gg_in_table_text, gg_in_table)
 
         gg_in_table_fields = [f.name for f in arcpy.ListFields(gg_in_table)]
         proc_hist_fieldname = "proc_hist"
@@ -335,16 +335,21 @@ class BaseTool(object):
         f_names = ["{0}_field_{1}".format(parameter_name, i) for i in range(0, num_fields)]  # [f_0, f_1, ...]
         f_vals = [self.get_parameter_by_name(f_name).valueAsText for f_name in f_names]
         f_vals.append(proc_hist_fieldname)
+        if nonkey_names:
+            f_vals.extend(nonkey_names)
         rows = [r for r in arcpy.da.SearchCursor(gg_in_table, f_vals)]
 
         # iterate
         key_names.append(proc_hist_fieldname)
+        if nonkey_names:
+            key_names.extend(nonkey_names)
+
         self.do_iteration(func, rows, key_names)
 
         return
 
     @base.log.log
-    def iterate_function_on_parameter(self, func, parameter_name, key_names):
+    def iterate_function_on_parameter(self, func, parameter_name, key_names, nonkey_names=None):
         """ Runs a function over the values in a parameter - a less common tool scenario
 
         Args:
@@ -377,6 +382,8 @@ class BaseTool(object):
 
         # iterate
         key_names.append("proc_hist")
+        if nonkey_names:
+            key_names.extend(nonkey_names)
         self.do_iteration(func, rows, key_names)
 
         return

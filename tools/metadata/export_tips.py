@@ -1,6 +1,9 @@
 from base.base_tool import BaseTool
-import base.results
-from base.method_decorators import input_tableview, input_output_table
+from base import results
+from base import utils
+from base.method_decorators import input_tableview, input_output_table, parameter
+from collections import OrderedDict
+
 
 tool_settings = {"label": "Export tips",
                  "description": "Exports tips...",
@@ -8,14 +11,17 @@ tool_settings = {"label": "Export tips",
                  "category": "Metadata"}
 
 
-@base.results.result
+@results.result
 class ExportTipsMetadataTool(BaseTool):
     def __init__(self):
+
         BaseTool.__init__(self, tool_settings)
 
         self.execution_list = [self.iterate]
 
-    @input_tableview("geodata_table", "Table of Geodata", False, ["geodata:geodata:"])
+    @input_tableview("tip_table", "Table of Tips", False, ["geodata:geodata:"])
+    @parameter("include_fields", "Include Fields", "Field", "Required", True, "Input", None, None, ["tip_table"], None, None)
+    @parameter("tip_folder", "Folder for Tip Files", "DEFolder", "Required", False, "Input", None, None, None, None, None)
     @input_output_table
     def getParameterInfo(self):
 
@@ -23,38 +29,40 @@ class ExportTipsMetadataTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_parameter(self.export, "geodata_table", ["geodata"])
+        self.include_fields = self.include_fields.split(";")
+
+        self.iterate_function_on_tableview(self.export, "tip_table", ["geodata"], nonkey_names=self.include_fields)
 
         return
 
     def export(self, data):
 
+        self.log.info(data)
+
         geodata = data["geodata"]
 
-        base.utils.validate_geodata(geodata)
+        utils.validate_geodata(geodata)
 
-    # geodata = run['item']
-    # tool.info("Creating TIP file for {0}".format(geodata))
-    #
-    # row = run["item_row"]
-    # row_fields = run["item_row_fields"]
-    # tool.info(row_fields)
-    # tip_order = row[row_fields.index("tip_order")]
-    # tip_order = tip_order.split(",")
-    # tool.info(tip_order)
-    # ordered_fields = [f for f in tip_order if f in tip_fields]
-    # tip_dic = OrderedDict()
-    # for tf in ordered_fields:
-    #     tip_dic[tf] = row[row_fields.index(tf)]
-    # # tip_dic = {tf: row[row_fields.index(tf)] for tf in ordered_fields}
-    #
-    # fpath, fname, fbase, fext = tool.split_up(geodata)
-    #
-    # tip_file = tool.join_up(tip_folder, fbase, ".tip")
-    # tool.info(tip_file)
-    # with open(tip_file, "w") as tipfile:
-    #     for k, v in tip_dic.iteritems():
-    #         tipfile.write("{0}: {1}\n".format(k, v))
-    #
-    # return {"item": geodata, "metadata": "to do", "tip_file": tip_file}
+        self.log.info("Creating TIP file for {0}".format(geodata))
+
+        tip_order = data["tip_order"].split(",")
+        self.log.info(tip_order)
+
+        ordered_fields = [f for f in tip_order if f in self.include_fields]
+
+        tip_dic = OrderedDict()
+        for tip_field in ordered_fields:
+            tip_dic[tip_field] = data[tip_field]
+
+        fpath, fname, fbase, fext = utils.split_up_filename(geodata)
+
+        tip_file = utils.join_up_filename(self.tip_folder, fbase, ".tip")
+        self.log.info(tip_file)
+        with open(tip_file, "w") as tipfile:
+            for k, v in tip_dic.iteritems():
+                tipfile.write("{0}: {1}\n".format(k, v))
+
+        self.log.info(self.result.add({"geodata": geodata, "tip_file": tip_file}))
+
+        return
 

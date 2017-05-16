@@ -22,7 +22,7 @@ class CreateTipFilesMetadataTool(BaseTool):
 
     @input_tableview("geodata_table", "Table of Geodata", False, ["geodata:geodata:"])
     @parameter("tip_template", "Tip Template", "GPTableView", "Required", False, "Input", None, None, None, None, None)
-    @parameter("include_fields", "Include Fields", "Field", "Required", True, "Input", None, None, ["tip_template"], None, None)
+    # @parameter("include_fields", "Include Fields", "Field", "Required", True, "Input", None, None, ["tip_template"], None, None)
     @input_output_table
     def getParameterInfo(self):
 
@@ -30,21 +30,18 @@ class CreateTipFilesMetadataTool(BaseTool):
 
     def initialise(self):
 
-        if os.path.exists(self.tip_template):  # in case it is a tool re-run
-            with open(self.tip_template, "r") as tipfile:
-                self.base_tips = [line.rstrip() for line in tipfile]
-        else:
-            raise ValueError("Template {} does not exist".format(self.tip_template))
+        with open(self.tip_template, "r") as tipfile:
+            self.base_tips = [line.rstrip() for line in tipfile]
 
         if self.base_tips:
-            base_tips = [t for t in self.base_tips if t]
+            base_tips = [line for line in self.base_tips if line]
             k = [x.strip() for x in base_tips[0].split(",")]
             v = [x.strip() for x in base_tips[1].split(",")]
             base_tips = zip(k, v)
-            tipt = OrderedDict()
-            for t in base_tips:
-                tipt[t[0]] = t[1]
-            self.base_tips = tipt
+            tipdic = OrderedDict(base_tips)
+            # for k, v in base_tips.iteritems():
+            #     tipt[line[0]] = line[1]
+            self.base_tips = tipdic
             self.tip_order = ",".join(self.base_tips.iterkeys())
         else:
             raise ValueError("Tip template table '{}' is empty".format(self.tip_template))
@@ -100,7 +97,7 @@ class CreateTipFilesMetadataTool(BaseTool):
         r = {"geodata": geodata, "tip_order": self.tip_order}
         r.update(new_tips)
 
-        self.result.add(r)
+        self.log.info(self.result.add(r))
 
         return
         # ,
