@@ -22,6 +22,7 @@ class CopyRasterTool(BaseTool):
         return
 
     @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:"])
+    @parameter("raster_format", "Output Raster Format", "GPString", "Optional", False, "Input", raster_formats2, None, None, "Esri Grid")
     @parameter("config_keyword", "Config Keyword", "GPString", "Optional", False, "Input", None, None, None, None, "Options")
     @parameter("background_value", "Background Value", "GPDouble", "Optional", False, "Input", None, None, None, None, "Options")
     @parameter("nodata_value", "NoData Value", "GPString", "Optional", False, "Input", None, None, None, None, "Options")
@@ -30,7 +31,6 @@ class CopyRasterTool(BaseTool):
     @parameter("pixel_type", "Pixel Type", "GPString", "Optional", False, "Input", pixel_type, None, None, None, "Options")
     @parameter("scale_pixel_value", "Scale Pixel value", "GPString", "Optional", False, "Input", ["NONE", "ScalePixelValue"], None, None, None, "Options")
     @parameter("RGB_to_Colormap", "RGB to Colourmap", "GPString", "Optional", False, "Input", ["NONE", "RGBToColormap"], None, None, None, "Options")
-    @parameter("format", "Output Raster Format", "GPString", "Optional", False, "Input", raster_formats2, None, None, None, "Options")
     @parameter("transform", "Transform", "GPString", "Optional", False, "Input", None, None, None, None, "Options")
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
@@ -48,7 +48,7 @@ class CopyRasterTool(BaseTool):
         ras = data["raster"]
 
         base.utils.validate_geodata(ras, raster=True)
-        ras_out = base.utils.make_raster_name(ras, self.result.output_workspace, prefix=self.output_filename_prefix, suffix=self.output_filename_suffix)
+        ras_out = base.utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
         self.log.info("Copying {0} -->> {1} ...".format(ras, ras_out))
         arcpy.CopyRaster_management(ras, ras_out, self.config_keyword, self.background_value, self.nodata_value, self.onebit_to_eightbit, self.colormap_to_RGB, self.pixel_type, self.scale_pixel_value, self.RGB_to_Colormap, self.raster_format, self.transform)

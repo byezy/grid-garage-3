@@ -254,6 +254,8 @@ class BaseTool(object):
         """
 
         # create the dict
+        # TODO make multivalue parameters a list
+        # TODO see what binning the bloody '#' does to tools
         pd = {}
         for p in self.parameter_objects:
             name = p.name
@@ -284,20 +286,8 @@ class BaseTool(object):
 
         return pd
 
-    # @base.log.log
-    # def get_parameter_names(self):
-    #     """ Create a dictionary of parameter names
-    #
-    #     Returns: A dictionary of parameter names
-    #
-    #     """
-    #
-    #     pn = [p.name for p in self.parameter_objects]
-    #
-    #     return pn
-
     @base.log.log
-    def iterate_function_on_tableview(self, func, parameter_name, key_names, nonkey_names=None):
+    def iterate_function_on_tableview(self, func, parameter_name, key_names, nonkey_names=None, return_to_results=False):
         """ Runs a function over the values in a tableview parameter - a common tool scenario
 
         Args:
@@ -344,12 +334,12 @@ class BaseTool(object):
         if nonkey_names:
             key_names.extend(nonkey_names)
 
-        self.do_iteration(func, rows, key_names)
+        self.do_iteration(func, rows, key_names, return_to_results)
 
         return
 
     @base.log.log
-    def iterate_function_on_parameter(self, func, parameter_name, key_names, nonkey_names=None):
+    def iterate_function_on_parameter(self, func, parameter_name, key_names, nonkey_names=None, return_to_results=False):
         """ Runs a function over the values in a parameter - a less common tool scenario
 
         Args:
@@ -372,11 +362,8 @@ class BaseTool(object):
         base.log.debug("param.valueAsText.split(';' =  {}".format(param.valueAsText.split(";")))
         rows = param.valueAsText.split(";") if multi_val else [param.valueAsText]
 
-        for row in rows:  # add proc_hist field
-            # base.log.debug("row =  {}".format(row))
-            row = base.utils.make_tuple(row).append("")
-            # base.log.debug("row =  {}".format(row))
-            # row.append("")
+        # for row in rows:  # add proc_hist field
+        rows = [base.utils.make_tuple(row).append("") for row in rows]
 
         base.log.debug("Processing rows will be {}".format(rows))
 
@@ -384,12 +371,12 @@ class BaseTool(object):
         key_names.append("proc_hist")
         if nonkey_names:
             key_names.extend(nonkey_names)
-        self.do_iteration(func, rows, key_names)
+        self.do_iteration(func, rows, key_names, return_to_results)
 
         return
 
     @base.log.log
-    def do_iteration(self, func, rows, key_names):
+    def do_iteration(self, func, rows, key_names, return_to_results):
 
         if not rows:
             raise ValueError("No values or records to process.")
@@ -397,10 +384,8 @@ class BaseTool(object):
         fname = func.__name__
         base.log.log(func)
 
-        # rows = [utils.make_tuple(row) for row in rows]
         rows = [{k: v for k, v in zip(key_names, utils.make_tuple(row))} for row in rows]
-        total_items = len(rows)
-        base.log.info("{0} items to process".format(total_items))
+        base.log.info("{} items to process".format(len(rows)))
 
         for row in rows:
             try:
@@ -408,11 +393,21 @@ class BaseTool(object):
                     self.result.new_proc_hist = "Tool='{}' Parameters={} Row={}".format(self.label, self.get_parameter_dict(), row)
                 except AttributeError:
                     pass
+
                 base.log.debug("Running {} with data={}".format(fname, row))
-                func(row)
+                res = func(row)
+                if return_to_results:
+                    try:
+                        self.log.info(self.result.add(res))
+                    except AttributeError:
+                        raise ValueError("No result attribute for result record")
+
             except Exception as e:
+
                 base.log.error("error executing {}: {}".format(fname, str(e)))
-                if hasattr(self, "result"):
+                try:
                     self.result.fail(row)
+                except AttributeError:
+                    pass
 
         return

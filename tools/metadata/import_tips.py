@@ -1,16 +1,19 @@
 from base.base_tool import BaseTool
-import base.results
-import base.utils
+from base import results
+from base import utils
 from base.method_decorators import input_tableview, input_output_table
+from collections import OrderedDict
+import os
 
-tool_settings = {"label": "Import Tips",
+
+tool_settings = {"label": "Import Tip Files to Table",
                  "description": "Create a table of tips from existing tip files",
                  "can_run_background": "True",
                  "category": "Metadata"}
 
 
-@base.results.result
-class ImportTipsMetadataTool(BaseTool):
+@results.result
+class ImportTipFilesToTableMetadataTool(BaseTool):
     def __init__(self):
 
         BaseTool.__init__(self, tool_settings)
@@ -24,66 +27,49 @@ class ImportTipsMetadataTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_parameter(self.create, "geodata_table", ["geodata"])
+        self.iterate_function_on_tableview(self.import_tip, "geodata_table", ["geodata"])
 
         return
 
-    def create(self, data):
+    def import_tip(self, data):
 
         geodata = data["geodata"]
+        utils.validate_geodata(geodata)
 
-        base.utils.validate_geodata(geodata)
+        fpath, fname, fbase, fext = utils.split_up_filename(geodata)
+
+        tip_file = utils.join_up_filename(fpath, fbase, ".tip")
+
+        if not os.path.exists(tip_file):
+            raise ValueError("Tip file '{}' does not exist".format(tip_file))
+
+        self.log.info("Parsing {0}".format(tip_file))
+
+        tips = OrderedDict()
+        tips["header"] = ""
+
+        with open(tip_file, "r") as tipfile:
+            buf = "header"
+            for line in tipfile:
+                s = line.strip().encode("ascii").split(":", 1)
+                if len(s) > 1:
+                    s1, s2 = s
+                    buf = s1
+                else:
+                    s1 = s[0]
+                    s2 = None
+                if not s2:
+                    tips[buf] += s1
+                else:
+                    tips[s1] = s2
+
+        tips["field_order"] = tips.keys()
+
+        res = {"geodata": geodata, "tip_file": tip_file}
+        res.update(tips)
+
+        self.log.info(self.result.add(res))
 
         return
 
-
-# def parse(run):
-#     """
-#     Clip raster based on current run parameters.
-#
-#     #Clip_management (in_raster, rectangle, out_raster, {in_template_dataset},
-#     #                                      {nodata_value}, {clipping_geometry})
-#     ======== ===================================================================
-#     Arg1     run - A dictionary of run-time objects
-#     Return   None
-#     Raises   None
-#     Effect   A new dataset that is a clip of the original
-#     ======== ===================================================================
-#     """
-#     # tool.info(run['item_row'])
-#     tip_file = run['item_row'][1]
-#     err = None
-#
-#     if not tool.geodata_exists(tip_file):
-#         err = "Tip file '{0}' does not exist".format(tip_file)
-#         tool.info(err)
-#         return {"item": run["item"], "err": err, "tip_file": tip_file}
-#
-#     tool.info("Parsing {0}".format(tip_file))
-#
-#     tips = ODict()
-#     tips["header"] = ""
-#
-#     with open(tip_file, "r") as tipfile:
-#         buf = "header"
-#         for line in tipfile:
-#             s = line.strip().encode("ascii").split(":", 1)
-#             if len(s) > 1:
-#                 s1, s2 = s
-#                 buf = s1
-#             else:
-#                 s1 = s[0]
-#                 s2 = None
-#             if not s2:
-#                 tips[buf] += s1
-#             else:
-#                 tips[s1] = s2
-#
-#     tips["field_order"] = tips.keys()
-#
-#     res = {"item": run["item"], "metadata": "to do", "tip_file": tip_file}
-#     res.update(tips)
-#
-#     return res
-#
 

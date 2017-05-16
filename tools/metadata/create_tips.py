@@ -5,14 +5,14 @@ from base.method_decorators import input_tableview, input_output_table, paramete
 from collections import OrderedDict
 import os
 
-tool_settings = {"label": "Create Tips",
+tool_settings = {"label": "Create Tips Table",
                  "description": "Create a table of tips from a tip file template",
                  "can_run_background": "True",
                  "category": "Metadata"}
 
 
 @base.results.result
-class CreateTipFilesMetadataTool(BaseTool):
+class CreateTipsTableMetadataTool(BaseTool):
     def __init__(self):
 
         BaseTool.__init__(self, tool_settings)
@@ -38,10 +38,7 @@ class CreateTipFilesMetadataTool(BaseTool):
             k = [x.strip() for x in base_tips[0].split(",")]
             v = [x.strip() for x in base_tips[1].split(",")]
             base_tips = zip(k, v)
-            tipdic = OrderedDict(base_tips)
-            # for k, v in base_tips.iteritems():
-            #     tipt[line[0]] = line[1]
-            self.base_tips = tipdic
+            self.base_tips = OrderedDict(base_tips)
             self.tip_order = ",".join(self.base_tips.iterkeys())
         else:
             raise ValueError("Tip template table '{}' is empty".format(self.tip_template))
@@ -50,7 +47,7 @@ class CreateTipFilesMetadataTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.create, "geodata_table", ["geodata"])
+        self.iterate_function_on_tableview(self.create, "geodata_table", ["geodata"], return_to_results=True)
 
         return
 
@@ -62,48 +59,12 @@ class CreateTipFilesMetadataTool(BaseTool):
 
         self.log.info("Building tips for {0}".format(geodata))
 
-        # curr_tips = None
-        # if tip_file and tool.geodata_exists(tip_file):
-        #     with open(tip_file, "r") as tipfile:
-        #         curr_tips = [line.rstrip() for line in tipfile]
-        # curr_tips =
-        #
-        # if curr_tips:
-        #     curr_tips = [t for t in curr_tips if t]
-        #     tipd = OrderedDict()
-        #     tipd["Title"] = curr_tips[0]
-        #     for t in curr_tips[1:]:
-        #         a, b = t.split(":", 1)
-        #         tipd[a] = b
-        #     curr_tips = tipd
-
-        new_tips = None
-        # if curr_tips and base_tips:
-
-        if self.base_tips:
-            new_tips = OrderedDict()  # base_tips
-            for k, v in self.base_tips.iteritems():
-                new_tips[k] = v
-        #     for k, v in curr_tips.iteritems():
-        #         new_tips[k] = v
-        # elif base_tips:
-        #     new_tips = base_tips
-        # elif curr_tips:
-        #     new_tips = curr_tips
-
-        # here's where updates to default should occur
-
-        # tipfile2 = ""
         r = {"geodata": geodata, "tip_order": self.tip_order}
+
+        new_tips = OrderedDict()
+        for k, v in self.base_tips.iteritems():
+            new_tips[k] = v
+
         r.update(new_tips)
 
-        self.log.info(self.result.add(r))
-
-        return
-        # ,
-        #     "existing_tipfile": tipfile,
-        #     "base_tips": str(base_tips),
-        #     "curr_tips": str(curr_tips),
-        #     "new_tips": str(new_tips),
-        #     "new_tipfile": tipfile2,
-        #     "metadata": "to do"}
+        return r

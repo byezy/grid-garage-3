@@ -12,7 +12,7 @@ tool_settings = {"label": "Export tips",
 
 
 @results.result
-class ExportTipsMetadataTool(BaseTool):
+class ExportTipsToFileMetadataTool(BaseTool):
     def __init__(self):
 
         BaseTool.__init__(self, tool_settings)
@@ -29,15 +29,11 @@ class ExportTipsMetadataTool(BaseTool):
 
     def iterate(self):
 
-        self.include_fields = self.include_fields.split(";")
-
-        self.iterate_function_on_tableview(self.export, "tip_table", ["geodata"], nonkey_names=self.include_fields)
+        self.iterate_function_on_tableview(self.export, "tip_table", ["geodata"], nonkey_names=self.include_fields.split(";") , return_to_results=True)
 
         return
 
     def export(self, data):
-
-        self.log.info(data)
 
         geodata = data["geodata"]
 
@@ -46,7 +42,6 @@ class ExportTipsMetadataTool(BaseTool):
         self.log.info("Creating TIP file for {0}".format(geodata))
 
         tip_order = data["tip_order"].split(",")
-        self.log.info(tip_order)
 
         ordered_fields = [f for f in tip_order if f in self.include_fields]
 
@@ -57,12 +52,10 @@ class ExportTipsMetadataTool(BaseTool):
         fpath, fname, fbase, fext = utils.split_up_filename(geodata)
 
         tip_file = utils.join_up_filename(self.tip_folder, fbase, ".tip")
-        self.log.info(tip_file)
+
         with open(tip_file, "w") as tipfile:
             for k, v in tip_dic.iteritems():
                 tipfile.write("{0}: {1}\n".format(k, v))
 
-        self.log.info(self.result.add({"geodata": geodata, "tip_file": tip_file}))
-
-        return
+        return {"geodata": geodata, "tip_file": tip_file}
 
