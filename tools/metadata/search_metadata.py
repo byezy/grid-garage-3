@@ -37,14 +37,14 @@ class SearchMetadataTool(BaseTool):
 
         utils.validate_geodata(geodata)
 
-        gd_path,  basename, gd_name, gd_ext = utils.split_up_filename(geodata)[0]
+        gd_path,  gd_base, gd_name, gd_ext = utils.split_up_filename(geodata)
 
         self.log.info("Searching {0}".format(geodata))
 
         desc = arcpy.Describe(geodata)
         arc_retrieved = desc.metadataRetrieved
 
-        xml_file = os.path.join(gd_path, basename + ".xml")
+        xml_file = os.path.join(gd_path, gd_base + ".xml")
         xml = None
         if os.path.exists(xml_file):
             with open(xml_file, "r") as xmlfile:
@@ -52,7 +52,7 @@ class SearchMetadataTool(BaseTool):
         else:
             xml_file = "{0} does not exist".format(xml_file)
 
-        html_file = os.path.join(gd_path, basename + ".html")
+        html_file = os.path.join(gd_path, gd_base + ".html")
         html = None
         if os.path.exists(html_file):
             with open(html_file, "r") as htmlfile:
@@ -60,14 +60,14 @@ class SearchMetadataTool(BaseTool):
         else:
             html_file = "{0} does not exist".format(html_file)
 
-        pdf_file = os.path.join(gd_path, basename + ".pdf")
-        pdf = None
-        if os.path.exists(pdf_file):
-            pass  # not now
-        else:
-            pdf_file = "{0} does not exist".format(html_file)
+        # pdf_file = os.path.join(gd_path, gd_name + ".pdf")
+        # pdf = None
+        # if os.path.exists(pdf_file):
+        #     pass  # not now
+        # else:
+        #     pdf_file = "{0} does not exist".format(html_file)
 
-        tip_file = os.path.join(gd_path, basename + ".tip")
+        tip_file = os.path.join(gd_path, gd_name + ".tip")
         tip = None
         if os.path.exists(tip_file):
             # lines = [line.rstrip() for line in open(tip_file)]
@@ -116,7 +116,7 @@ class SearchMetadataTool(BaseTool):
 
         self.result.add({"geodata": geodata, "arc_retrieved": arc_retrieved,
                          "tip_file": tip_file, "tip": tip, "xml_file": xml_file, "xml": xml,
-                         "html_file": html_file, "html": html, "pdf_file": pdf_file})
+                         "html_file": html_file, "html": html})  #, "pdf_file": pdf_file})
 
         return
 

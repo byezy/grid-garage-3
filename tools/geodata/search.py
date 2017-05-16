@@ -1,18 +1,21 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base import results
 from base.method_decorators import input_output_table, parameter
 from base.utils import datatype_list, walk
-tool_settings = {"label": "Search for Geodata",
+
+
+tool_settings = {"label": "Search",
                  "description": "Search for identifiable geodata",
                  "can_run_background": "True",
                  "category": "Geodata"}
 
-@base.results.result
-class SearchGeodataTool(base.base_tool.BaseTool):
+
+@results.result
+class SearchGeodataTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.initialise, self.iterate]
 
         return
@@ -22,7 +25,7 @@ class SearchGeodataTool(base.base_tool.BaseTool):
     @input_output_table
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def initialise(self):
 
@@ -48,6 +51,5 @@ class SearchGeodataTool(base.base_tool.BaseTool):
                 self.log.info("Nothing found")
             else:
                 self.log.info(self.result.add(found))
-
 
         return
