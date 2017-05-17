@@ -1,5 +1,5 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base import results
 from base.method_decorators import input_output_table, parameter
 from base.utils import split_up_filename, walk
 import re
@@ -11,11 +11,11 @@ tool_settings = {"label": "List Workspace Tables",
                  "category": "Geodata"}
 
 
-@base.results.result
-class ListWorkspaceTablesGeodataTool(base.base_tool.BaseTool):
+@results.result
+class ListWorkspaceTablesGeodataTool(BaseTool):
 
     def __init__(self):
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.iterate]
 
         return
@@ -24,11 +24,11 @@ class ListWorkspaceTablesGeodataTool(base.base_tool.BaseTool):
     @input_output_table
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def iterate(self):
 
-        self.iterate_function_on_parameter(self.list, "workspaces", ["workspace"])
+        self.iterate_function_on_parameter(self.list, "workspaces", ["workspace"], True)
 
     def list(self, data):
 
@@ -48,6 +48,4 @@ class ListWorkspaceTablesGeodataTool(base.base_tool.BaseTool):
             d["date_time_ex_name"] = match.group(0) if match else None
             dic_list.append(d)
 
-        self.log.info(self.result.add(dic_list))
-
-        return
+        return dic_list

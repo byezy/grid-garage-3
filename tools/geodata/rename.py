@@ -1,5 +1,5 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base import results
 from base.method_decorators import input_output_table, input_tableview
 from arcpy import Rename_management
 
@@ -9,11 +9,11 @@ tool_settings = {"label": "Rename",
                  "category": "Geodata"}
 
 
-@base.results.result
-class RenameGeodataTool(base.base_tool.BaseTool):
+@results.result
+class RenameGeodataTool(BaseTool):
 
     def __init__(self):
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.iterate]
 
         return
@@ -22,24 +22,21 @@ class RenameGeodataTool(base.base_tool.BaseTool):
     @input_output_table
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.rename, "geodata_table", ["geodata", "new name"])
+        self.iterate_function_on_tableview(self.rename, "geodata_table", ["geodata", "new name"], return_to_results=True)
 
         return
 
     def rename(self, data):
 
-        gd = data["new name"]
-        ngd = data["geodata"]
+        geodata = data["geodata"]
+        new_geodata = data["new name"]
 
-        self.log.info('Renaming {0} --> {1}'.format(gd, ngd))
-        Rename_management(gd, ngd)
+        self.log.info('Renaming {0} --> {1}'.format(geodata, new_geodata))
+        Rename_management(geodata, new_geodata)
 
-        r = self.result.add({'geodata': ngd, 'previous_name': gd})
-        self.log.info(r)
-
-        return
+        return {'geodata': new_geodata, 'previous_name': geodata}
 

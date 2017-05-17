@@ -1,5 +1,5 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base import results
 from base.method_decorators import input_output_table, input_tableview
 
 tool_settings = {"label": "Extract Parent Datasource",
@@ -8,12 +8,12 @@ tool_settings = {"label": "Extract Parent Datasource",
                  "category": "Geodata"}
 
 
-@base.results.result
-class ExtractParentGeodataTool(base.base_tool.BaseTool):
+@results.result
+class ExtractParentGeodataTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.iterate]
 
         return
@@ -22,7 +22,7 @@ class ExtractParentGeodataTool(base.base_tool.BaseTool):
     @input_output_table
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def iterate(self):
 

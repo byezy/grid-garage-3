@@ -1,5 +1,5 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base import results
 from base.method_decorators import input_output_table_with_output_affixes, input_tableview, parameter
 from base.utils import split_up_filename, is_raster, is_vector, make_raster_name, make_vector_name, make_table_name, get_search_cursor_rows
 
@@ -10,12 +10,12 @@ tool_settings = {"label": "Generate Names",
                  "category": "Geodata"}
 
 
-@base.results.result
-class GenerateNamesGeodataTool(base.base_tool.BaseTool):
+@results.result
+class GenerateNamesGeodataTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.initialise, self.iterate, self.test_duplicates]
 
         return
@@ -25,7 +25,7 @@ class GenerateNamesGeodataTool(base.base_tool.BaseTool):
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def test_duplicates(self):
         """
@@ -72,7 +72,7 @@ class GenerateNamesGeodataTool(base.base_tool.BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.process, "geodata_table", ["geodata"])
+        self.iterate_function_on_tableview(self.process, "geodata_table", ["geodata"], return_to_results=True)
 
         return
 
@@ -101,6 +101,5 @@ class GenerateNamesGeodataTool(base.base_tool.BaseTool):
             new_full = make_table_name(new_name, old_ws, old_ext, self.output_filename_prefix, self.output_filename_suffix)
 
         self.log.info("{0} -->> {1}".format(gd, new_full))
-        self.result.add({'geodata': gd, 'candidate_name': new_full, 'existing_base_name': old_base, 'candidate_base_name': new_base})
 
-        return
+        return {'geodata': gd, 'candidate_name': new_full, 'existing_base_name': old_base, 'candidate_base_name': new_base}

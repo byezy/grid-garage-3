@@ -54,7 +54,6 @@ class SearchGeodataTool(BaseTool):
 
         self.log.info("Searching for {} geodata types in {}".format(self.data_type, workspace))
 
-
         for root, dirs, files in arcpy.da.Walk(workspace, datatype=self.data_type, type=None, followlinks=True):
             for f in files:
                 self.log.info(self.result.add({"geodata": join(root, f)}))
