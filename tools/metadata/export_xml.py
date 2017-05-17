@@ -3,7 +3,8 @@ from base import results
 from base import utils
 from base.method_decorators import input_tableview, input_output_table, parameter
 import arcpy
-import os
+from os.path import join, exists
+import arcpy_metadata as md
 
 tool_settings = {"label": "Export XML",
                  "description": "Exports XML...",
@@ -11,19 +12,9 @@ tool_settings = {"label": "Export XML",
                  "category": "Metadata"}
 
 
-def get_install_dir():
-
-    return arcpy.GetInstallInfo("desktop")["InstallDir"]
-
-
-def get_default_translator():
-
-    return os.path.join(get_install_dir(), "Metadata/Translator/ARCGIS2ISO19139.xml")  # ESRI_ISO2ISO19139.xml")
-
-
-def get_default_stylesheet():
-
-    return os.path.join(get_install_dir(), "Metadata/Stylesheets/ArcGIS.xsl")  # ESRI_ISO2ISO19139.xml")
+install_dir = arcpy.GetInstallInfo("desktop")["InstallDir"]
+default_translator = join(install_dir, "Metadata", "Translator", "ARCGIS2ISO19139.xml")  # ESRI_ISO2ISO19139.xml")
+default_stylesheet = join(install_dir, "Metadata", "Stylesheets", "ArcGIS.xsl")  # ESRI_ISO2ISO19139.xml")
 
 
 @results.result
@@ -36,8 +27,8 @@ class ExportXmlMetadataTool(BaseTool):
 
     @input_tableview("geodata_table", "Table of Geodata", False, ["geodata:geodata:"])
     @parameter("xml_folder", "XML Folder", "DEFolder", "Required", False, "Input", None, None, None, None)
-    @parameter("translator", "Translator", "DEFile", "Required", False, "Input", None, None, None, get_default_translator(), None)
-    @parameter("stylesheet", "Style Sheet", "DEFile", "Required", False, "Input", None, None, None, get_default_stylesheet(), None)
+    @parameter("translator", "Translator", "DEFile", "Required", False, "Input", None, None, None, default_translator, None)
+    @parameter("stylesheet", "Style Sheet", "DEFile", "Required", False, "Input", None, None, None, default_stylesheet, None)
     @input_output_table
     def getParameterInfo(self):
 
@@ -45,26 +36,40 @@ class ExportXmlMetadataTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_parameter(self.export, "geodata_table", ["geodata"])
+        if not exists(self.translator):
+            raise ValueError("Translator '{}' does not exist".format(self.translator))
+
+        if not exists(self.stylesheet):
+            raise ValueError("Stylesheet '{}' does not exist".format(self.stylesheet))
+
+        self.iterate_function_on_tableview(self.export, "geodata_table", ["geodata"])
 
         return
 
     def export(self, data):
 
         geodata = data["geodata"]
+
         self.log.info("Creating XML/HTML files for {}".format(geodata))
 
-        fpath, fname, fbase, fext = utils.split_up_filename.split_up(geodata)
+        fpath, fname, fbase, fext = utils.split_up_filename(geodata)
 
         xml_file = utils.join_up_filename(fpath, fbase, ".xml")
-        arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
+
+        metadata = md.MetadataEditor(metadata_file=xml_file)
+        metadata.finish()
+
+        # arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
+
         self.log.info("XML file '{}' created".format(xml_file))
 
         html_file = utils.join_up_filename(self.xml_folder, fbase, ".html")
-        arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "#")
-        self.log.info("HTML file '{}' created".format(html_file))
 
-        return {"item": geodata, "xml_file": xml_file, "html_file": html_file}
+        # arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "#")
+        #
+        # self.log.info("HTML file '{}' created".format(html_file))
+
+        return {"geodata": geodata, "xml_file": xml_file, "html_file": html_file}
 
 
 # import arcpy

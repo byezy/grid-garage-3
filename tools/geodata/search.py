@@ -1,7 +1,9 @@
 from base.base_tool import BaseTool
 from base import results
 from base.method_decorators import input_output_table, parameter
-from base.utils import datatype_list, walk
+from base.utils import datatype_list, walk, validate_geodata
+import arcpy
+from os.path import join
 
 
 tool_settings = {"label": "Search",
@@ -16,7 +18,7 @@ class SearchGeodataTool(BaseTool):
     def __init__(self):
 
         BaseTool.__init__(self, tool_settings)
-        self.execution_list = [self.initialise, self.iterate]
+        self.execution_list = [self.iterate]
 
         return
 
@@ -27,29 +29,35 @@ class SearchGeodataTool(BaseTool):
 
         return BaseTool.getParameterInfo(self)
 
-    def initialise(self):
+    def iterate(self):
 
         gt = self.geodata_types.split(";")
         gt = ["Any"] if "Any" in gt else gt
         self.geodata_types = gt
 
-        return
-
-    def iterate(self):
         self.iterate_function_on_parameter(self.search, "workspaces", ["workspace"])
 
         return
 
     def search(self, data):
 
-        ws = data["workspace"]
+        workspace = data["workspace"].strip("'")
 
-        for dt in self.geodata_types:
-            self.log.info("Searching for {0} geodata types in {1}".format(dt, ws))
-            found = [{"geodata": v} for v in walk(ws.strip("'"), data_types=dt)]
-            if not found:
-                self.log.info("Nothing found")
-            else:
-                self.log.info(self.result.add(found))
+        if not arcpy.Exists(workspace):
+            raise ValueError("Workspace '{}' does not exist".format(workspace))
+
+        self.log.info("Searching for {} geodata types in {}".format(self.geodata_types, workspace))
+
+        for root, dirs, files in arcpy.da.Walk(workspace, datatype=self.geodata_types, type=None, followlinks=True):
+            for f in files:
+                self.log.info(self.result.add({"geodata": join(root, f)}))
+
+        #         x.append(os.path.join(root, f))
+        # return x
+        # found = [{"geodata": v} for v in walk(workspace, data_types=dt)]
+        # if not found:
+        #     self.log.info("Nothing found")
+        # else:
+        #     self.log.info(self.result.add(found))
 
         return

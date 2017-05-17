@@ -362,8 +362,8 @@ class BaseTool(object):
         base.log.debug("param.valueAsText.split(';' =  {}".format(param.valueAsText.split(";")))
         rows = param.valueAsText.split(";") if multi_val else [param.valueAsText]
 
-        # for row in rows:  # add proc_hist field
-        rows = [base.utils.make_tuple(row).append("") for row in rows]
+        for row in rows:  # add proc_hist field
+            base.utils.make_tuple(row).append("")
 
         base.log.debug("Processing rows will be {}".format(rows))
 
