@@ -22,11 +22,12 @@ from arcpy_metadata.languages import languages
 # TODO: Have logger handle deprecation warnings
 # turn on warnings for deprecation once
 warnings.simplefilter('once', DeprecationWarning)
+
+
 # Make warnings look nice
 def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
     return '{0}: {1}\n'.format(category.__name__, message)
 warnings.formatwarning = warning_on_one_line
-
 
 
 install_dir = arcpy.GetInstallInfo("desktop")["InstallDir"]
@@ -43,40 +44,40 @@ class MetadataEditor(object):
     def __init__(self, dataset=None, metadata_file=None, items=None,
                  temp_folder=metadata_temp_folder, loglevel='INFO'):
 
-        screen_handler = None
-        self.logger = logging.getLogger("__name__")
-        if not len(self.logger.handlers):
-            screen_handler = logging.StreamHandler()  # set up the logging level at debug, but only write INFO or higher to the screen
-            self.logger.setLevel(logging.DEBUG)
-            self.logger.addHandler(screen_handler)
-        else:
-            for handler in self.logger.handlers:
-                # take the first one available
-                if isinstance(handler, logging.StreamHandler):
-                    screen_handler = handler
-                    break
-
-            # just making sure that there is a screenhandler
-            if screen_handler is None:
-                screen_handler = logging.StreamHandler()
-                self.logger.setLevel(logging.DEBUG)
-                self.logger.addHandler(screen_handler)
-
-        if loglevel.upper() == "CRITICAL":
-            screen_handler.setLevel(logging.CRITICAL)
-        elif loglevel.upper() == "ERROR":
-            screen_handler.setLevel(logging.ERROR)
-        elif loglevel.upper() == "WARNING":
-            screen_handler.setLevel(logging.WARNING)
-        elif loglevel.upper() == "INFO":
-            screen_handler.setLevel(logging.INFO)
-        elif loglevel.upper() == "DEBUG":
-            screen_handler.setLevel(logging.DEBUG)
-        else:
-            screen_handler.setLevel(logging.NOTSET)
-
-
-        self.logger.debug("Set logging mode to {0}".format(loglevel))
+        # screen_handler = None
+        # self.logger = logging.getLogger("__name__")
+        # if not len(self.logger.handlers):
+        #     screen_handler = logging.StreamHandler()  # set up the logging level at debug, but only write INFO or higher to the screen
+        #     self.logger.setLevel(logging.DEBUG)
+        #     self.logger.addHandler(screen_handler)
+        # else:
+        #     for handler in self.logger.handlers:
+        #         # take the first one available
+        #         if isinstance(handler, logging.StreamHandler):
+        #             screen_handler = handler
+        #             break
+        #
+        #     # just making sure that there is a screenhandler
+        #     if screen_handler is None:
+        #         screen_handler = logging.StreamHandler()
+        #         self.logger.setLevel(logging.DEBUG)
+        #         self.logger.addHandler(screen_handler)
+        #
+        # if loglevel.upper() == "CRITICAL":
+        #     screen_handler.setLevel(logging.CRITICAL)
+        # elif loglevel.upper() == "ERROR":
+        #     screen_handler.setLevel(logging.ERROR)
+        # elif loglevel.upper() == "WARNING":
+        #     screen_handler.setLevel(logging.WARNING)
+        # elif loglevel.upper() == "INFO":
+        #     screen_handler.setLevel(logging.INFO)
+        # elif loglevel.upper() == "DEBUG":
+        #     screen_handler.setLevel(logging.DEBUG)
+        # else:
+        #     screen_handler.setLevel(logging.NOTSET)
+        #
+        #
+        # self.logger.debug("Set logging mode to {0}".format(loglevel))
 
         if items is None:
             items = list()
@@ -125,7 +126,7 @@ class MetadataEditor(object):
                     self.metadata_file = os.path.join(self.temp_folder, metadata_filename)
                     if os.path.exists(self.metadata_file):
                         os.remove(self.metadata_file)
-                    self.logger.debug("Exporting metadata to temporary file {0!s}".format(self.metadata_file))
+                    # self.logger.debug("Exporting metadata to temporary file {0!s}".format(self.metadata_file))
                     arcpy.XSLTransform_conversion(self.dataset, xslt, self.metadata_file)
                 else:
                     raise TypeError("Cannot read {0}. Data type is not supported".format(self.dataset))
@@ -151,7 +152,7 @@ class MetadataEditor(object):
 
             if "unsupported" in elements[name].keys():
                 if self.data_type in elements[name]["unsupported"]:
-                    self.logger.debug("{0} not supported for {1}. SKIP".format(name, self.data_type))
+                    # self.logger.debug("{0} not supported for {1}. SKIP".format(name, self.data_type))
                     continue
 
             setattr(self, "_{0!s}".format(name), None)
@@ -206,7 +207,7 @@ class MetadataEditor(object):
 
     def _create_xml_file(self, xml_file):
         with open(xml_file, "w") as f:
-            self.logger.debug("Create new file {0!s}".format(xml_file))
+            # self.logger.debug("Create new file {0!s}".format(xml_file))
             f.write('<metadata xml:lang="en"></metadata>')
 
     def __setattr__(self, n, v):
@@ -442,9 +443,10 @@ class MetadataEditor(object):
             for child in children:
                 element.remove(child)
                 i += 1
-            self.logger.info("Remove {0} item(s) from the geoprocessing history".format(i))
+            # self.logger.info("Remove {0} item(s) from the geoprocessing history".format(i))
         else:
-            self.logger.info("There are no items in the geoprocessing history")
+            # self.logger.info("There are no items in the geoprocessing history")
+            pass
 
 
     def save(self, Enable_automatic_updates=False):
@@ -455,13 +457,13 @@ class MetadataEditor(object):
         :param Enable_automatic_updates: boolean
         :return:
         """
-        self.logger.info("Saving metadata")
+        # self.logger.info("Saving metadata")
 
-        for item in self.items:  # TODO: What's going on here?
-            try:
-                self.logger.debug(item.value)
-            except:
-                self.logger.warn(item)
+        # for item in self.items:  # TODO: What's going on here?
+        #     try:
+        #         self.logger.debug(item.value)
+        #     except:
+        #         self.logger.warn(item)
 
         self.elements.write(self.metadata_file)  # overwrites itself
 
@@ -472,8 +474,7 @@ class MetadataEditor(object):
             else:
                 updates = 'DISABLED'
 
-            arcpy.ImportMetadata_conversion(self.metadata_file, "FROM_ARCGIS", self.dataset,
-                                            Enable_automatic_updates=updates)
+            arcpy.ImportMetadata_conversion(self.metadata_file, "FROM_ARCGIS", self.dataset, Enable_automatic_updates=updates)
 
     def cleanup(self):
         """
@@ -481,7 +482,7 @@ class MetadataEditor(object):
         :return:
         """
         try:
-            self.logger.debug("cleaning up from metadata operation")
+            # self.logger.debug("cleaning up from metadata operation")
             if self._workspace_type != 'FileSystem':
                 if os.path.exists(self.metadata_file):
                     os.remove(self.metadata_file)
@@ -491,13 +492,14 @@ class MetadataEditor(object):
                     os.remove(xsl_extras)
 
         except:
-            self.logger.warning("Unable to remove temporary metadata files")
+            # self.logger.warning("Unable to remove temporary metadata files")
+            pass
 
-    def finish(self, Enable_automatic_updates=False):
+    def finish(self, enable_automatic_updates=False):
         """
         Alias for saving and cleaning up
-        :param Enable_automatic_updates: boolean
+        :param enable_automatic_updates: boolean
         :return:
         """
-        self.save(Enable_automatic_updates)
+        self.save(enable_automatic_updates)
         self.cleanup()

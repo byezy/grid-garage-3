@@ -56,9 +56,9 @@ class ExportXmlMetadataTool(BaseTool):
 
         xml_file = utils.join_up_filename(fpath, fbase, ".xml")
 
-        metadata = md.MetadataEditor(metadata_file=xml_file)
+        metadata = md.MetadataEditor(geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
+        self.log.info(metadata.__dict__)
         metadata.finish()
-
         # arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
 
         self.log.info("XML file '{}' created".format(xml_file))

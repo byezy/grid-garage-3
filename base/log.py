@@ -166,11 +166,11 @@ def error_trap(context):
 def log(f):
     """ A decorator to trap and log exceptions """
     @functools.wraps(f)
-    def wrapper(*args, **kwargs):
+    def log_wrap(*args, **kwargs):
         with error_trap(f):
             return f(*args, **kwargs)
 
-    return wrapper
+    return log_wrap
 
 
 def main():
