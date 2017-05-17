@@ -28,7 +28,7 @@ class BaseTool(object):
         self.description = settings.get("description", "description not set")
         self.canRunInBackground = settings.get("can_run_background", False)
         self.category = settings.get("category", False)
-        self.stylesheet = self.set_stylesheet()
+        # self.stylesheet = self.set_stylesheet()
 
         # hold refs to arcgis args passed to Execute()
         self.parameter_strings = None
@@ -45,23 +45,23 @@ class BaseTool(object):
 
         return
 
-    @staticmethod
-    def set_stylesheet():
-        """ Set the tool stylesheet.
+    # @staticmethod
+    # def set_stylesheet():
+    #     """ Set the tool stylesheet.
+    #
+    #     Returns:
+    #
+    #     """
+    #     style_path = os.path.split(os.path.realpath(__file__))[0]  # base
+    #     style_path = os.path.split(style_path)[0]  # grid_garage_3
+    #     style_path = os.path.join(style_path, "style")
+    #     xls1 = os.path.join(style_path, "MdDlgContent.xsl")
+    #     xls2 = os.path.join(style_path, "MdDlgHelp.xsl")
+    #     return ";".join([xls1, xls2])
 
-        Returns:
-
-        """
-        style_path = os.path.split(os.path.realpath(__file__))[0]  # base
-        style_path = os.path.split(style_path)[0]  # grid_garage_3
-        style_path = os.path.join(style_path, "style")
-        xls1 = os.path.join(style_path, "MdDlgContent.xsl")
-        xls2 = os.path.join(style_path, "MdDlgHelp.xsl")
-        return ";".join([xls1, xls2])
-
-    @staticmethod
-    def evaluate(node_or_string):
-        return ast.literal_eval(node_or_string)
+    # @staticmethod
+    # def evaluate(node_or_string):
+    #     return ast.literal_eval(node_or_string)
 
     @base.log.log
     def get_parameter_by_name(self, param_name, raise_not_found_error=False):
@@ -86,19 +86,19 @@ class BaseTool(object):
 
         return
 
-    @base.log.log
+    # @base.log.log
     def getParameterInfo(self):
         """Define parameter definitions"""
 
         return []
 
-    @base.log.log
+    # @base.log.log
     def isLicensed(self):
         """Set whether tool is licensed to execute."""
 
         return True
 
-    @base.log.log
+    # @base.log.log
     def updateParameters(self, parameters):
         """ Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
@@ -123,7 +123,7 @@ class BaseTool(object):
 
         return
 
-    @base.log.log
+    # @base.log.log
     def updateMessages(self, parameters):
         """
 

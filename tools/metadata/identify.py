@@ -130,3 +130,34 @@ class IdentifyMetadataTool(BaseTool):
         return
 
 
+"""
+This script looks through the specified geodatabase and reports the
+names of all data elements, their schema owners and their feature
+dataset (if applicable). Certain metadata elements such as abstract,
+purpose and search keys are also reported.
+
+The output is a CSV file that can be read by Excel, ArcGIS, etc.
+
+Only geodatabases are supported, not folder workspaces.
+
+Note: If run from outside of ArcToolbox, you will need to add
+the metadata tool assemblies to the Global Assembly Cache.
+See: http://forums.arcgis.com/threads/74468-Python-Errors-in-IDLE-when-processing-metadata
+
+Parameters:
+    0 - Input workspace (file geodatabase, personal geodatabase,
+            or SDE connection file)
+    1 - Output CSV file
+
+Date updated: 2/11/2013
+"""
+
+# if __name__ == '__main__':
+#     workspace = arcpy.GetParameterAsText(0)
+#     csvFile = arcpy.GetParameterAsText(1)
+#     headerRow = CreateHeaderRow()
+#     print headerRow
+#     datasetRows = ListWorkspaceContentsAndMetadata(workspace)
+#     WriteCSVFile(csvFile, datasetRows, headerRow)
+
+

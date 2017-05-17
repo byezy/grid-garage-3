@@ -448,13 +448,12 @@ class MetadataEditor(object):
             # self.logger.info("There are no items in the geoprocessing history")
             pass
 
-
-    def save(self, Enable_automatic_updates=False):
+    def save(self, enable_automatic_updates=False):
         """
         Save pending edits to file
         If feature class, import temporary XML file back into GDB
 
-        :param Enable_automatic_updates: boolean
+        :param enable_automatic_updates: boolean
         :return:
         """
         # self.logger.info("Saving metadata")
@@ -469,12 +468,12 @@ class MetadataEditor(object):
 
         if self._workspace_type != 'FileSystem':
 
-            if Enable_automatic_updates:
+            if enable_automatic_updates:
                 updates = 'ENABLED'
             else:
                 updates = 'DISABLED'
 
-            arcpy.ImportMetadata_conversion(self.metadata_file, "FROM_ARCGIS", self.dataset, Enable_automatic_updates=updates)
+            arcpy.ImportMetadata_conversion(self.metadata_file, "FROM_ARCGIS", self.dataset, enable_automatic_updates=updates)
 
     def cleanup(self):
         """

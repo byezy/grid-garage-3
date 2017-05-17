@@ -1,5 +1,5 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base import results
 from base.method_decorators import input_output_table, input_tableview
 from datetime import datetime
 from arcpy import Delete_management
@@ -20,11 +20,11 @@ tool_settings = {"label": "Delete",
                  "category": "Geodata"}
 
 
-@base.results.result
-class DeleteGeodataTool(base.base_tool.BaseTool):
+@results.result
+class DeleteGeodataTool(BaseTool):
 
     def __init__(self):
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.start_iteration]
 
         return
@@ -33,7 +33,7 @@ class DeleteGeodataTool(base.base_tool.BaseTool):
     @input_output_table
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def start_iteration(self):
 

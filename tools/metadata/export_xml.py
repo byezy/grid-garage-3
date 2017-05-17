@@ -42,7 +42,7 @@ class ExportXmlMetadataTool(BaseTool):
         if not exists(self.stylesheet):
             raise ValueError("Stylesheet '{}' does not exist".format(self.stylesheet))
 
-        self.iterate_function_on_tableview(self.export, "geodata_table", ["geodata"])
+        self.iterate_function_on_tableview(self.export, "geodata_table", ["geodata"], return_to_results=True)
 
         return
 
@@ -54,20 +54,24 @@ class ExportXmlMetadataTool(BaseTool):
 
         fpath, fname, fbase, fext = utils.split_up_filename(geodata)
 
-        xml_file = utils.join_up_filename(fpath, fbase, ".xml")
+        xml_file = utils.join_up_filename(self.xml_folder, fname, ".xml")
 
-        metadata = md.MetadataEditor(geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
-        self.log.info(metadata.__dict__)
-        metadata.finish()
-        # arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
-
-        self.log.info("XML file '{}' created".format(xml_file))
+        # metadata = md.MetadataEditor(geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
+        # self.log.info(metadata.__dict__)
+        # metadata.finish()
+        try:
+            arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
+            self.log.info("XML file '{}' created".format(xml_file))
+        except Exception as e:
+            xml_file = "Error creating '{}': {}".format(xml_file, e)
 
         html_file = utils.join_up_filename(self.xml_folder, fbase, ".html")
 
-        # arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "#")
-        #
-        # self.log.info("HTML file '{}' created".format(html_file))
+        try:
+            arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "")
+            self.log.info("HTML file '{}' created".format(html_file))
+        except:
+            html_file = "Error creating '{}': {}".format(html_file, e)
 
         return {"geodata": geodata, "xml_file": xml_file, "html_file": html_file}
 

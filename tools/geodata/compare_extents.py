@@ -1,5 +1,5 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base import results
 import collections
 import arcpy
 import base.utils
@@ -12,13 +12,13 @@ tool_settings = {"label": "Compare Extents",
                  "category": "Geodata"}
 
 
-@base.results.result
-class CompareExtentsGeodataTool(base.base_tool.BaseTool):
+@results.result
+class CompareExtentsGeodataTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
-        self.execution_list = [self.initialise, self.iterate]
+        BaseTool.__init__(self, tool_settings)
+        self.execution_list = [self.iterate]
         self.aoi_extent = None
         self.aoi_srs_name = None
         self.aoi_extent_string = None
@@ -30,19 +30,15 @@ class CompareExtentsGeodataTool(base.base_tool.BaseTool):
     @input_output_table
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
-    def initialise(self):
+    def iterate(self):
 
         self.aoi_extent = arcpy.Describe(self.aoi_dataset).extent
         self.aoi_srs_name = self.aoi_extent.spatialReference.name
         self.aoi_extent_string = "{0} {1}".format(self.aoi_extent, self.aoi_srs_name)
 
-        return
-
-    def iterate(self):
-
-        self.iterate_function_on_tableview(self.compare, "geodata_table", ["geodata"])
+        self.iterate_function_on_tableview(self.compare, "geodata_table", ["geodata"], return_to_results=True)
 
         return
 
@@ -80,6 +76,4 @@ class CompareExtentsGeodataTool(base.base_tool.BaseTool):
             ("disjoint_aoi", dis), ("overlaps_aoi", ovr),
             ("equals_aoi", equ), ("touches_aoi", tch)])
 
-        self.log.info(self.result.add(r))
-
-        return
+        return r
