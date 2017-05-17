@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 import os
 from base.method_decorators import input_tableview, input_output_table
 import xml.etree.cElementTree as et
@@ -10,7 +10,7 @@ tool_settings = {"label": "Get IAR ID From XML",
                  "category": "Metadata"}
 
 
-@results.result
+@result
 class GetIARIDFromXmlTool(BaseTool):
     def __init__(self):
 

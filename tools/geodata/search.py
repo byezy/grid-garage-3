@@ -1,7 +1,7 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 from base.method_decorators import input_output_table, parameter
-from base.utils import datatype_list, walk, validate_geodata
+from base.utils import datatype_list
 import arcpy
 from os.path import join
 import os
@@ -18,7 +18,7 @@ tool_settings = {"label": "Search",
                  "category": "Geodata"}
 
 
-@results.result
+@result
 class SearchGeodataTool(BaseTool):
 
     def __init__(self):

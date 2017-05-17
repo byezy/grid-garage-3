@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 from base.method_decorators import input_output_table, parameter
 
 tool_settings = {"label": "Select",
@@ -8,7 +8,7 @@ tool_settings = {"label": "Select",
                  "category": "Geodata"}
 
 
-@results.result
+@result
 class SelectGeodataTool(BaseTool):
 
     def __init__(self):

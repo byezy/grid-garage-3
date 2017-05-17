@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 from base.method_decorators import input_output_table, input_tableview
 from arcpy import Rename_management
 
@@ -9,7 +9,7 @@ tool_settings = {"label": "Rename",
                  "category": "Geodata"}
 
 
-@results.result
+@result
 class RenameGeodataTool(BaseTool):
 
     def __init__(self):

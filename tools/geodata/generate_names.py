@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 from base.method_decorators import input_output_table_with_output_affixes, input_tableview, parameter
 from base.utils import split_up_filename, is_raster, is_vector, make_raster_name, make_vector_name, make_table_name, get_search_cursor_rows
 
@@ -10,7 +10,7 @@ tool_settings = {"label": "Generate Names",
                  "category": "Geodata"}
 
 
-@results.result
+@result
 class GenerateNamesGeodataTool(BaseTool):
 
     def __init__(self):

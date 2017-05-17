@@ -1,8 +1,8 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
+from base import utils
 from base.method_decorators import input_output_table_with_output_affixes, input_tableview
 from os.path import splitext
-from base.utils import make_table_name
 from arcpy import Copy_management
 
 
@@ -12,7 +12,7 @@ tool_settings = {"label": "Copy",
                  "category": "Geodata"}
 
 
-@results.result
+@result
 class CopyGeodataTool(BaseTool):
 
     def __init__(self):
@@ -39,7 +39,7 @@ class CopyGeodataTool(BaseTool):
         geodata = data["geodata"]
 
         ext = splitext(geodata)[1]
-        new_geodata = make_table_name(geodata, self.result.output_workspace, ext, self.output_filename_prefix, self.output_filename_suffix)
+        new_geodata = utils.make_table_name(geodata, self.result.output_workspace, ext, self.output_filename_prefix, self.output_filename_suffix)
 
         self.log.info('Copying {0} --> {1}'.format(geodata, new_geodata))
         Copy_management(geodata, new_geodata)

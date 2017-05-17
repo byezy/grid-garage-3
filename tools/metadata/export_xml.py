@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 from base import utils
 from base.method_decorators import input_tableview, input_output_table, parameter
 import arcpy
@@ -17,7 +17,7 @@ default_translator = join(install_dir, "Metadata", "Translator", "ARCGIS2ISO1913
 default_stylesheet = join(install_dir, "Metadata", "Stylesheets", "ArcGIS.xsl")  # ESRI_ISO2ISO19139.xml")
 
 
-@results.result
+@result
 class ExportXmlMetadataTool(BaseTool):
 
     def __init__(self):

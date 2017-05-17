@@ -1,8 +1,8 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base.results import result
+from base import utils
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, raster_formats
 import arcpy
-import base.utils
 
 tool_settings = {"label": "Tweak Values",
                  "description": "Tweaks raster cell values with simple mathematics and can integerise result",
@@ -10,12 +10,12 @@ tool_settings = {"label": "Tweak Values",
                  "category": "Raster"}
 
 
-@base.results.result
-class TweakValuesRasterTool(base.base_tool.BaseTool):
+@result
+class TweakValuesRasterTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.initialise, self.iterate]
 
         return
@@ -32,7 +32,7 @@ class TweakValuesRasterTool(base.base_tool.BaseTool):
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def initialise(self):
 
@@ -43,16 +43,16 @@ class TweakValuesRasterTool(base.base_tool.BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.tweak, "raster_table", ["raster"])
+        self.iterate_function_on_tableview(self.tweak, "raster_table", ["raster"], return_to_results=True)
 
         return
 
     def tweak(self, data):
 
         r_in = data["raster"]
-        base.utils.validate_geodata(r_in, raster=True)
+        utils.validate_geodata(r_in, raster=True)
 
-        r_out = base.utils.make_raster_name(r_in, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
+        r_out = utils.make_raster_name(r_in, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
         ras = arcpy.Raster(r_in)
         ndv = ras.noDataValue
@@ -111,9 +111,6 @@ class TweakValuesRasterTool(base.base_tool.BaseTool):
         self.log.info('\tSaving to {}'.format(r_out))
         ras.save(r_out)
 
-        r = self.result.add({"geodata": r_out, "source_geodata": r_in, "tweaks": ' & '.join(tweaks)})
-        self.log.info(r)
-
-        return
+        return {"geodata": r_out, "source_geodata": r_in, "tweaks": ' & '.join(tweaks)}
 
 # Con (in_conditional_raster, in_true_raster_or_constant, {in_false_raster_or_constant}, {where_clause})

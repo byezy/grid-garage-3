@@ -1,9 +1,9 @@
 from base.base_tool import BaseTool
-import base.results
-import base.utils
+from base.results import result
+from base import utils
 from base.method_decorators import input_tableview, input_output_table, parameter
 from collections import OrderedDict
-import os
+
 
 tool_settings = {"label": "Create Tips Table",
                  "description": "Create a table of tips from a tip file template",
@@ -11,7 +11,7 @@ tool_settings = {"label": "Create Tips Table",
                  "category": "Metadata"}
 
 
-@base.results.result
+@result
 class CreateTipsTableMetadataTool(BaseTool):
     def __init__(self):
 
@@ -55,7 +55,7 @@ class CreateTipsTableMetadataTool(BaseTool):
 
         geodata = data["geodata"]
 
-        base.utils.validate_geodata(geodata)
+        utils.validate_geodata(geodata)
 
         self.log.info("Building tips for {0}".format(geodata))
 

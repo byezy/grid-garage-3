@@ -1,8 +1,8 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
+from base import utils
 import collections
 import arcpy
-import base.utils
 from base.method_decorators import input_output_table, input_tableview, parameter
 
 
@@ -12,7 +12,7 @@ tool_settings = {"label": "Compare Extents",
                  "category": "Geodata"}
 
 
-@results.result
+@result
 class CompareExtentsGeodataTool(BaseTool):
 
     def __init__(self):
@@ -45,7 +45,7 @@ class CompareExtentsGeodataTool(BaseTool):
     def compare(self, data):
 
         ds_in = data["geodata"]
-        base.utils.validate_geodata(ds_in, srs_known=True)
+        utils.validate_geodata(ds_in, srs_known=True)
 
         try:
             ds_extent = arcpy.Describe(ds_in).extent

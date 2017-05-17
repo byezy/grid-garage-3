@@ -1,8 +1,8 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base.results import result
+from base import utils
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, raster_formats
 from arcpy.sa import *
-import base.utils
 
 
 tool_settings = {"label": "Lookup by Table",
@@ -11,12 +11,12 @@ tool_settings = {"label": "Lookup by Table",
                  "category": "Raster"}
 
 
-@base.results.result
-class LookupByTableRasterTool(base.base_tool.BaseTool):
+@result
+class LookupByTableRasterTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.iterate]
 
         return
@@ -26,7 +26,7 @@ class LookupByTableRasterTool(base.base_tool.BaseTool):
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def iterate(self):
 
@@ -37,12 +37,13 @@ class LookupByTableRasterTool(base.base_tool.BaseTool):
     def lookup(self, data):
 
         ras = data["raster"]
-        base.utils.validate_geodata(ras, raster=True)
+
+        utils.validate_geodata(ras, raster=True)
 
         lookup_fields = data["lookup fields"].replace(" ", "").split(",")
         for f in lookup_fields:
             try:
-                ras_out = base.utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix + "_" + f)
+                ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix + "_" + f)
                 self.log.info("Lookup field '{0}' in '{1}'".format(f, ras))
                 out = Lookup(ras, f)
                 self.log.info(out)

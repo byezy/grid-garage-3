@@ -1,7 +1,7 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
+from base import utils
 from base.method_decorators import input_output_table, input_tableview
-from base.utils import describe
 
 tool_settings = {"label": "Describe",
                  "description": "Describes geodata",
@@ -9,7 +9,7 @@ tool_settings = {"label": "Describe",
                  "category": "Geodata"}
 
 
-@results.result
+@result
 class DescribeGeodataTool(BaseTool):
 
     def __init__(self):
@@ -37,5 +37,5 @@ class DescribeGeodataTool(BaseTool):
 
         self.log.info("Describing {0}".format(item))
 
-        return describe(item)
+        return utils.describe(item)
 

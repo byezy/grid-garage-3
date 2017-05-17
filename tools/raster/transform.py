@@ -1,9 +1,9 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base.results import result
+from base import utils
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, transform_methods, raster_formats
 # from base.geodata import DoesNotExistError
-import base.utils
-import arcpy as ap
+import arcpy
 # import numpy as np
 
 tool_settings = {"label": "Transform",
@@ -12,12 +12,12 @@ tool_settings = {"label": "Transform",
                  "category": "Raster"}
 
 
-@base.results.result
-class TransformRasterTool(base.base_tool.BaseTool):
+@result
+class TransformRasterTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.iterate]
 
         return
@@ -30,18 +30,18 @@ class TransformRasterTool(base.base_tool.BaseTool):
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def updateParameters(self, parameters):
 
-        base.base_tool.BaseTool.updateParameters(self, parameters)
+        BaseTool.updateParameters(self, parameters)
         parameters[3].enabled = parameters[4].enabled = (parameters[2].value == 'STRETCH')
 
         return
 
     def updateMessages(self, parameters):
 
-        base.base_tool.BaseTool.updateMessages(self, parameters)
+        BaseTool.updateMessages(self, parameters)
         stretch = parameters[2].value == 'STRETCH'
         if stretch and not parameters[3].valueAsText:
             parameters[3].setIDMessage("ERROR", 735, parameters[3].displayName)
@@ -52,26 +52,27 @@ class TransformRasterTool(base.base_tool.BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.transform, "raster_table", ["raster"])
+        self.iterate_function_on_tableview(self.transform, "raster_table", ["raster"], return_to_results=True)
 
         return
 
     def get_property(self, raster, property):
 
-        v = ap.GetRasterProperties_management(raster, property)
+        v = arcpy.GetRasterProperties_management(raster, property)
         v = v.getOutput(0)
         self.log.debug("for raster {} property {} has type {} ".format(raster, property, type(v)))
 
         return float(v)
 
     def transform(self, data):
-        r_in = data["raster"]
-        base.utils.validate_geodata(r_in, raster=True)
 
-        r_out = base.utils.make_raster_name(r_in, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
+        r_in = data["raster"]
+        utils.validate_geodata(r_in, raster=True)
+
+        r_out = utils.make_raster_name(r_in, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
         self.log.info("\tCalculating statistics")
-        ap.CalculateStatistics_management(r_in)
+        arcpy.CalculateStatistics_management(r_in)
 
         raster_mean = self.get_property(r_in, "MEAN")
         raster_std = self.get_property(r_in, "STD")
@@ -80,7 +81,7 @@ class TransformRasterTool(base.base_tool.BaseTool):
         self.log.info("\tStatistics Mean/Std/Min/Max: {}/{}/{}/{}".format(raster_mean, raster_std, raster_min, raster_max))
 
         self.log.info("Transforming raster {} using method {}".format(r_in, self.method))
-        ras = ap.Raster(r_in)
+        ras = arcpy.Raster(r_in)
 
         if self.method == "STANDARDISE":
             ras = (ras - raster_mean) / raster_std
@@ -99,10 +100,10 @@ class TransformRasterTool(base.base_tool.BaseTool):
                 ras = (ras - raster_min) / (raster_max - raster_min)
 
         elif self.method == "LOG":
-            ras = ap.sa.Ln(r_in)
+            ras = arcpy.sa.Ln(r_in)
 
         elif self.method == "SQUAREROOT":
-            ras = ap.sa.SquareRoot(r_in)
+            ras = arcpy.sa.SquareRoot(r_in)
 
         elif self.method == "INVERT":
             ras = (ras - (raster_max - raster_min)) * -1
@@ -112,9 +113,8 @@ class TransformRasterTool(base.base_tool.BaseTool):
         ras.save(r_out)
 
         data["method"] = self.method
-        self.result.add({"geodata": r_out, "source_geodata": r_in, "transform": data})
 
-        return
+        return {"geodata": r_out, "source_geodata": r_in, "transform": data}
 
         # this numpy stuff.. numpyarraytoraster just not behaving
         # self.send_info(data)

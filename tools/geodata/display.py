@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-import base.arcmap
+from base import arcmap
 from base.method_decorators import input_tableview
 
 
@@ -34,18 +34,18 @@ class DisplayGeodataTool(BaseTool):
         geodata = data["geodata"]
         try:
             # see if it's a layer
-            base.arcmap.add_layer(geodata, "BOTTOM")
+            arcmap.add_layer(geodata, "BOTTOM")
             self.log.info("Added layer {0} to display".format(geodata))
         except Exception:
             try:
                 # see if it's a table
-                base.arcmap.add_tableview(geodata)
+                arcmap.add_tableview(geodata)
                 self.log.info("Added table {0} to display".format(geodata))
             except Exception as e:
                 # bugger it for now
                 self.log.warn("Could not add {0} to display: {1}".format(geodata, str(e)))
         finally:
             # Refresh things
-            base.arcmap.refresh_active_view()
-            base.arcmap.refresh_toc()
+            arcmap.refresh_active_view()
+            arcmap.refresh_toc()
 

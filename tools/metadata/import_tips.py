@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 from base import utils
 from base.method_decorators import input_tableview, input_output_table
 from collections import OrderedDict
@@ -12,7 +12,7 @@ tool_settings = {"label": "Import Tip Files to Table",
                  "category": "Metadata"}
 
 
-@results.result
+@result
 class ImportTipFilesToTableMetadataTool(BaseTool):
     def __init__(self):
 
@@ -27,7 +27,7 @@ class ImportTipFilesToTableMetadataTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.import_tip, "geodata_table", ["geodata"])
+        self.iterate_function_on_tableview(self.import_tip, "geodata_table", ["geodata"], return_to_results=True)
 
         return
 
@@ -68,8 +68,6 @@ class ImportTipFilesToTableMetadataTool(BaseTool):
         res = {"geodata": geodata, "tip_file": tip_file}
         res.update(tips)
 
-        self.log.info(self.result.add(res))
-
-        return
+        return res
 
 

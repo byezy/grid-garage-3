@@ -1,5 +1,5 @@
 from base.base_tool import BaseTool
-from base import results
+from base.results import result
 from base import utils
 from base.method_decorators import input_tableview, input_output_table
 from base import log
@@ -15,7 +15,7 @@ tool_settings = {"label": "Identify",
                  "category": "Metadata"}
 
 
-@results.result
+@result
 class IdentifyMetadataTool(BaseTool):
     def __init__(self):
         BaseTool.__init__(self, tool_settings)

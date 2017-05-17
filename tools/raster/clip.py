@@ -1,5 +1,5 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base.results import result
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, raster_formats
 import arcpy
 from base.utils import get_srs, validate_geodata, compare_srs, make_raster_name
@@ -14,13 +14,13 @@ tool_settings = {"label": "Clip",
 #     NO_MAINTAIN_EXTENT - Maintain the cell alignment as the input raster and adjust the output extent accordingly."""
 
 
-@base.results.result
-class ClipRasterTool(base.base_tool.BaseTool):
+@result
+class ClipRasterTool(BaseTool):
 
     def __init__(self):
 
-        base.base_tool.BaseTool.__init__(self, tool_settings)
-        self.execution_list = [self.initialise, self.iterate]
+        BaseTool.__init__(self, tool_settings)
+        self.execution_list = [self.iterate]
         self.polygon_srs = None
 
         return
@@ -35,9 +35,9 @@ class ClipRasterTool(base.base_tool.BaseTool):
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
-    def initialise(self):
+    def iterate(self):
 
         if self.clipping_geometry:
             self.clipping_geometry = "ClippingGeometry"
@@ -46,11 +46,7 @@ class ClipRasterTool(base.base_tool.BaseTool):
             self.clipping_geometry = "NONE"
             self.polygons = "#"
 
-        return
-
-    def iterate(self):
-
-        self.iterate_function_on_tableview(self.clip, "raster_table", ["raster"])
+        self.iterate_function_on_tableview(self.clip, "raster_table", ["raster"], return_to_results=True)
 
         return
 
@@ -69,9 +65,7 @@ class ClipRasterTool(base.base_tool.BaseTool):
         self.log.info("Clipping {0} -->> {1} ...".format(ras, ras_out))
         arcpy.Clip_management(ras, self.rectangle, ras_out, self.polygons, self.no_data_val, self.clipping_geometry, self.maintain_extent)
 
-        self.log.info(self.result.add({"geodata": ras_out, "source_geodata": ras}))
-
-        return
+        return {"geodata": ras_out, "source_geodata": ras}
 
 # import arcpy
 # arcpy.Clip_management(
