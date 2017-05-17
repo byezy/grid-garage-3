@@ -1,8 +1,8 @@
-import base.base_tool
-import base.results
+from base.base_tool import BaseTool
+from base.results import result
+from base import utils
 from base.method_decorators import input_output_table_with_output_affixes, input_tableview, parameter
 from os.path import splitext
-import base.utils
 import arcpy
 
 
@@ -12,11 +12,12 @@ tool_settings = {"label": "Copy",
                  "category": "Feature"}
 
 
-@base.results.result
-class CopyFeatureTool(base.base_tool.BaseTool):
+@result
+class CopyFeatureTool(BaseTool):
 
     def __init__(self):
-        base.base_tool.BaseTool.__init__(self, tool_settings)
+
+        BaseTool.__init__(self, tool_settings)
         self.execution_list = [self.iterate]
 
         return
@@ -29,7 +30,7 @@ class CopyFeatureTool(base.base_tool.BaseTool):
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
-        return base.base_tool.BaseTool.getParameterInfo(self)
+        return BaseTool.getParameterInfo(self)
 
     def iterate(self):
 
@@ -40,19 +41,17 @@ class CopyFeatureTool(base.base_tool.BaseTool):
     def process(self, data):
 
         fc = data["feature"]
-        base.utils.validate_geodata(fc, vector=True)
+        utils.validate_geodata(fc, vector=True)
 
         ws = self.result.output_workspace
         ex = splitext(fc)[1]
 
-        nfc = base.utils.make_vector_name(fc, ws, ex, self.output_filename_prefix, self. output_filename_suffix)
+        nfc = utils.make_vector_name(fc, ws, ex, self.output_filename_prefix, self. output_filename_suffix)
 
         self.log.info('copying {0} --> {1}'.format(fc, nfc))
         arcpy.CopyFeatures_management(fc, nfc, self.config_kw, self.sg_1, self.sg_2, self.sg_3)
 
-        self.result.add({'geodata': nfc, 'copied_from': fc})
-
-        return
+        return {'geodata': nfc, 'copied_from': fc}
 
 # "http://desktop.arcgis.com/en/arcmap/latest/tools/data-management-toolbox/copy-features.htm"
 # "CopyFeatures_management (in_features, out_feature_class, {config_keyword}, {spatial_grid_1}, {spatial_grid_2}, {spatial_grid_3})"
