@@ -50,18 +50,18 @@ class ExportXmlMetadataTool(BaseTool):
 
         geodata = data["geodata"]
 
-        self.log.info("Creating XML/HTML files for {}".format(geodata))
+        self.info("Creating XML/HTML files for {}".format(geodata))
 
         fpath, fname, fbase, fext = utils.split_up_filename(geodata)
 
         xml_file = utils.join_up_filename(self.xml_folder, fname, ".xml")
 
         # metadata = md.MetadataEditor(geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
-        # self.log.info(metadata.__dict__)
+        # self.info(metadata.__dict__)
         # metadata.finish()
         try:
             arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
-            self.log.info("XML file '{}' created".format(xml_file))
+            self.info("XML file '{}' created".format(xml_file))
         except Exception as e:
             xml_file = "Error creating '{}': {}".format(xml_file, e)
 
@@ -69,7 +69,7 @@ class ExportXmlMetadataTool(BaseTool):
 
         try:
             arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "")
-            self.log.info("HTML file '{}' created".format(html_file))
+            self.info("HTML file '{}' created".format(html_file))
         except:
             html_file = "Error creating '{}': {}".format(html_file, e)
 

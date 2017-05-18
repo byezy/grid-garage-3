@@ -2,7 +2,7 @@ from base.base_tool import BaseTool
 from base.results import result
 from base import utils
 from base.method_decorators import input_tableview, input_output_table
-from base import log
+from base.log import log_error
 import arcpy
 import os
 from collections import OrderedDict
@@ -33,7 +33,7 @@ class IdentifyMetadataTool(BaseTool):
 
         return
 
-    @log.log_error
+    @log_error
     def search(self, data):
 
         geodata = data["geodata"]
@@ -42,15 +42,15 @@ class IdentifyMetadataTool(BaseTool):
 
         # gd_path,  gd_base, gd_name, gd_ext = utils.split_up_filename(geodata)
 
-        self.log.info("Searching {0}".format(geodata))
+        self.info("Searching {0}".format(geodata))
 
         desc = arcpy.Describe(geodata)
         metadata_retrieved = desc.metadataRetrieved
-        self.log.info("metadataRetrieved: {}".format(metadata_retrieved))
+        self.info("metadataRetrieved: {}".format(metadata_retrieved))
 
-        self.log.info(md.MetadataEditor)
+        self.info(md.MetadataEditor)
         metadata = md.MetadataEditor(dataset=geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
-        self.log.info(metadata.__dict__)
+        self.info(metadata.__dict__)
         metadata.finish()
 
         # xml_file = os.path.join(gd_path, gd_base + ".xml")

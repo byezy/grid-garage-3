@@ -43,7 +43,7 @@ class ImportTipFilesToTableMetadataTool(BaseTool):
         if not os.path.exists(tip_file):
             raise ValueError("Tip file '{}' does not exist".format(tip_file))
 
-        self.log.info("Parsing {0}".format(tip_file))
+        self.info("Parsing {0}".format(tip_file))
 
         tips = OrderedDict()
         tips["header"] = ""

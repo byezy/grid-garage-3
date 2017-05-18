@@ -39,7 +39,7 @@ class ExportTipsToFileMetadataTool(BaseTool):
 
         utils.validate_geodata(geodata)
 
-        self.log.info("Creating TIP file for {0}".format(geodata))
+        self.info("Creating TIP file for {0}".format(geodata))
 
         tip_order = data["tip_order"].split(",")
 

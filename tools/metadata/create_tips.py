@@ -57,7 +57,7 @@ class CreateTipsTableMetadataTool(BaseTool):
 
         utils.validate_geodata(geodata)
 
-        self.log.info("Building tips for {0}".format(geodata))
+        self.info("Building tips for {0}".format(geodata))
 
         r = {"geodata": geodata, "tip_order": self.tip_order}
 

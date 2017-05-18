@@ -36,7 +36,7 @@ class GetIARIDFromXmlTool(BaseTool):
         if not os.path.exists(xmlfile):
             raise ValueError("XML file '{}' does not exist".format(xmlfile))
 
-        self.log.info("Parsing {0}".format(xmlfile))
+        self.info("Parsing {0}".format(xmlfile))
 
         tree = et.parse(xmlfile)
         root = tree.getroot()
