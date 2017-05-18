@@ -48,7 +48,7 @@ class ClipFeatureTool(BaseTool):
         fc_ws, fc_base, fc_name, fc_ext = utils.split_up_filename(fc)
         fc_out = utils.make_vector_name(fc, self.result.output_workspace, fc_ext, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.log.info("Clipping {0} -->> {1} ...".format(fc, fc_out))
+        self.info("Clipping {0} -->> {1} ...".format(fc, fc_out))
         arcpy.Clip_analysis(fc, self.clip_features, fc_out, self.xy_tolerance)
 
         return {"geodata": fc_out, "source_geodata": fc}

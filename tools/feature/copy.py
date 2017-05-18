@@ -48,7 +48,7 @@ class CopyFeatureTool(BaseTool):
 
         nfc = utils.make_vector_name(fc, ws, ex, self.output_filename_prefix, self. output_filename_suffix)
 
-        self.log.info('copying {0} --> {1}'.format(fc, nfc))
+        self.info('copying {0} --> {1}'.format(fc, nfc))
         arcpy.CopyFeatures_management(fc, nfc, self.config_kw, self.sg_1, self.sg_2, self.sg_3)
 
         return {'geodata': nfc, 'copied_from': fc}
