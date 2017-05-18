@@ -163,7 +163,7 @@ def error_trap(context):
     return
 
 
-def log(f):
+def log_error(f):
     """ A decorator to trap and log exceptions """
     @functools.wraps(f)
     def log_wrap(*args, **kwargs):

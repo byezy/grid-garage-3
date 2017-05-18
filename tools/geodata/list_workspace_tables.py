@@ -33,11 +33,16 @@ class ListWorkspaceTablesGeodataTool(BaseTool):
     def list(self, data):
 
         ws = data["workspace"]
-        self.log.info("Searching for tables in {0}".format(ws))
+
+        self.info("Searching for tables in {0}".format(ws))
+
         found = walk(ws, data_types="Table")
-        [self.log.info("Found: {}".format(f)) for f in found]
+
+        [self.info("Found: {}".format(f)) for f in found]
+
         if not found:
-            self.log.info("No tables were found")
+            self.info("No tables were found")
+
             return
 
         dic_list = []

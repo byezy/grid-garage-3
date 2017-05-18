@@ -35,7 +35,7 @@ class RenameGeodataTool(BaseTool):
         geodata = data["geodata"]
         new_geodata = data["new name"]
 
-        self.log.info('Renaming {0} --> {1}'.format(geodata, new_geodata))
+        self.info('Renaming {0} --> {1}'.format(geodata, new_geodata))
         Rename_management(geodata, new_geodata)
 
         return {'geodata': new_geodata, 'previous_name': geodata}

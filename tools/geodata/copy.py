@@ -41,7 +41,7 @@ class CopyGeodataTool(BaseTool):
         ext = splitext(geodata)[1]
         new_geodata = utils.make_table_name(geodata, self.result.output_workspace, ext, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.log.info('Copying {0} --> {1}'.format(geodata, new_geodata))
+        self.info('Copying {0} --> {1}'.format(geodata, new_geodata))
         Copy_management(geodata, new_geodata)
 
         return {'geodata': new_geodata, 'copied_from': geodata}

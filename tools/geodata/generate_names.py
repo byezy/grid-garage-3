@@ -32,25 +32,25 @@ class GenerateNamesGeodataTool(BaseTool):
         Test for duplicate names.
 
         """
-        self.log.info('Testing new names for duplication...')
+        self.info('Testing new names for duplication...')
         table = self.result.result_csv  # self.get_parameter_by_name("result_table").valueAsText()  # tool.get_parameter_as_text(0)
-        self.log.debug(table)
+        self.debug(table)
         rows = get_search_cursor_rows(table, ['candidate_name'])
-        self.log.debug(rows)
+        self.debug(rows)
         values = [x for x, in rows]
         duplicates = set([x for x in values if values.count(x) > 1])
         duplicates = list(duplicates)  # nicer print
 
         if not duplicates:
-            self.log.info('New item names (full) appear to be unique. Das is gut mein freund...')
+            self.info('New item names (full) appear to be unique. Das is gut mein freund...')
         else:
-            self.log.warn(['!! There seems to be non-unique new names. DOH! Please check the following...'] + duplicates)
+            self.warn(['!! There seems to be non-unique new names. DOH! Please check the following...'] + duplicates)
 
     def initialise(self):
 
         # look for an early exit as all parameters are optional
         if not (self.replacements or self.output_filename_prefix or self.output_filename_suffix):
-            self.log.warn('All optional parameters are empty. Nothing to do.')
+            self.warn('All optional parameters are empty. Nothing to do.')
             exit(1)
 
         if self.replacements:                                                                        # s_,; p_,prefix_
@@ -66,7 +66,7 @@ class GenerateNamesGeodataTool(BaseTool):
                 raise ValueError('Could not parse replacements string! It should be like "old", "new"; "next_old", "next_new"')
 
             # reflect the changes
-            self.log.info('Replacements to be made are: {0}'.format(replace))
+            self.info('Replacements to be made are: {0}'.format(replace))
 
         return
 
@@ -99,7 +99,5 @@ class GenerateNamesGeodataTool(BaseTool):
             new_full = make_vector_name(new_name, old_ws, old_ext, self.output_filename_prefix, self.output_filename_suffix)
         else:
             new_full = make_table_name(new_name, old_ws, old_ext, self.output_filename_prefix, self.output_filename_suffix)
-
-        self.log.info("{0} -->> {1}".format(gd, new_full))
 
         return {'geodata': gd, 'candidate_name': new_full, 'existing_base_name': old_base, 'candidate_base_name': new_base}

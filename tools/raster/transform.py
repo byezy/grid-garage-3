@@ -2,9 +2,7 @@ from base.base_tool import BaseTool
 from base.results import result
 from base import utils
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, transform_methods, raster_formats
-# from base.geodata import DoesNotExistError
 import arcpy
-# import numpy as np
 
 tool_settings = {"label": "Transform",
                  "description": "Transforms rasters...",
@@ -34,9 +32,8 @@ class TransformRasterTool(BaseTool):
 
     def updateParameters(self, parameters):
 
-        print "updateParameters"
-
-        BaseTool.updateParameters(self, parameters)
+        ps = [(i, p.name) for i, p in enumerate(parameters)]
+        self.log.debug("TransformRasterTool.updateParameters {}".format(ps))
 
         p2, p3, p4 = parameters[2], parameters[3], parameters[4]
 
@@ -49,6 +46,8 @@ class TransformRasterTool(BaseTool):
 
         if stretch and p4.valueAsText in [None, "", "#"]:
             p4.setIDMessage("ERROR", 735, p4.displayName)
+
+        BaseTool.updateParameters(self, parameters)
 
         return
 

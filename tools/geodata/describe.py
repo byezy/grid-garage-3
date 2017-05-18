@@ -35,7 +35,7 @@ class DescribeGeodataTool(BaseTool):
 
         item = data["geodata"]
 
-        self.log.info("Describing {0}".format(item))
+        self.info("Describing {0}".format(item))
 
         return utils.describe(item)
 

@@ -33,7 +33,7 @@ class IdentifyMetadataTool(BaseTool):
 
         return
 
-    @log.log
+    @log.log_error
     def search(self, data):
 
         geodata = data["geodata"]

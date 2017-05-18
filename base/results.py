@@ -14,7 +14,7 @@ def result(cls):
 
 
 class ResultsUtils(object):
-    @base.log.log
+    @base.log.log_error
     def __init__(self):
         """ Add class members """
 
@@ -36,7 +36,7 @@ class ResultsUtils(object):
 
         return
 
-    @base.log.log
+    @base.log.log_error
     def initialise(self, result_table_param, fail_table_param, out_workspace, result_table_name):
         """ Initialise the results for the instance
 
@@ -97,7 +97,7 @@ class ResultsUtils(object):
 
         return ret
 
-    @base.log.log
+    @base.log.log_error
     def add(self, results):
         """ Write result record to CSV
 
@@ -149,7 +149,7 @@ class ResultsUtils(object):
 
         return results
 
-    @base.log.log
+    @base.log.log_error
     def fail(self, row):
         """ Write failure record to CSV
 
@@ -202,7 +202,7 @@ class ResultsUtils(object):
 
         return
 
-    @base.log.log
+    @base.log.log_error
     def write(self):
         """ Write the success and failure csv files to the final tables
 
@@ -213,7 +213,7 @@ class ResultsUtils(object):
 
         return ret
 
-    @base.log.log
+    @base.log.log_error
     def _write_results(self):
         """ Write the result CSV rows to the final table
 
@@ -242,7 +242,7 @@ class ResultsUtils(object):
 
         return msg
 
-    @base.log.log
+    @base.log.log_error
     def _write_failures(self):
         """ Write the failure CSV rows to the final table
 

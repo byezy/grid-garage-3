@@ -4,24 +4,23 @@ Created on Thu Sep  1 10:48:26 2016
 
 @author: byed
 """
-import utils
-import os
-import ast
-import base.log
-import base.utils
+import base
+from base import utils
+from base.log import log_error
 import arcpy
 
 
 class BaseTool(object):
 
-    @base.log.log
+    @log_error
     def __init__(self, settings):
         """ Define the tool (tool name is the name of the class).
         Args:
             settings (): A dictionary implemented in derived classes
         """
-        self.log = base.log  # avoid requiring an import for each tool module
-        self.tool_type = type(self).__name__
+        self.debug = base.log.debug
+        self.info = base.log.info
+        self.warn = base.log.warn
 
         # the essentials
         self.label = settings.get("label", "label not set")
@@ -30,13 +29,8 @@ class BaseTool(object):
         self.category = settings.get("category", False)
         # self.stylesheet = self.set_stylesheet()
 
-        # hold refs to arcgis args passed to Execute()
         self.parameters = None
-
-        # used as stamp for default names etc.
-        self.run_id = "{0}_{1}".format(self.tool_type, utils.time_stamp())
-
-        # instance specific, set in derived classes
+        self.run_id = "{0}_{1}".format(type(self).__name__, utils.time_stamp())
         self.execution_list = []
 
         return
@@ -59,7 +53,7 @@ class BaseTool(object):
     # def evaluate(node_or_string):
     #     return ast.literal_eval(node_or_string)
 
-    @base.log.log
+    @log_error
     def get_parameter_by_name(self, param_name, raise_not_found_error=False):
         """ Returns a parameter based on its name
 
@@ -105,8 +99,7 @@ class BaseTool(object):
 
         """
         ps = [(i, p.name) for i, p in enumerate(parameters)]
-        print ps
-        self.log.debug("updateParameters {}".format(ps))
+        self.debug("BaseTool.updateParameters {}".format(ps))
         # set default result table name
 
         out_tbl_par = None
@@ -216,7 +209,7 @@ class BaseTool(object):
 
         return
 
-    @base.log.log
+    @log_error
     def execute(self, parameters, messages):
         """ The source code of the tool.
 
@@ -233,21 +226,21 @@ class BaseTool(object):
 
         self.log.configure_logging(messages)
 
-        self.log.info("Debugging log file is located at '{}'".format(base.log.LOG_FILE))
+        self.info("Debugging log file is located at '{}'".format(base.log.LOG_FILE))
 
         self.parameters = parameters
 
         for k, v in self.get_parameter_dict().iteritems():
             setattr(self, k, v)
 
-        self.log.debug("Tool attributes set {}".format(self.__dict__))
+        self.debug("Tool attributes set {}".format(self.__dict__))
 
         try:
             init = self.result.initialise(self.get_parameter_by_name("result_table"),
                                           self.get_parameter_by_name("fail_table"),
                                           self.get_parameter_by_name("output_workspace").value,
                                           self.get_parameter_by_name("result_table_name").value)
-            self.log.info(init)
+            self.info(init)
         except AttributeError:
             pass
 
@@ -262,7 +255,7 @@ class BaseTool(object):
 
         return
 
-    @base.log.log
+    @log_error
     def get_parameter_dict(self, leave_as_object=()):
         """ Create a dictionary of parameters
 
@@ -281,11 +274,11 @@ class BaseTool(object):
             name = p.name
             if name in leave_as_object:
                 pd[name] = p
-            elif p.dataType == "Boolean":
+            elif p.datatype == "Boolean":
                 pd[name] = [False, True][p.valueAsText == "true"]
-            elif p.dataType == "Double":
+            elif p.datatype == "Double":
                 pd[name] = float(p.valueAsText) if p.valueAsText else None
-            elif p.dataType == "Long":
+            elif p.datatype == "Long":
                 pd[name] = int(float(p.valueAsText)) if p.valueAsText else None
             else:
                 pd[name] = p.valueAsText or "#"
@@ -306,7 +299,7 @@ class BaseTool(object):
 
         return pd
 
-    @base.log.log
+    @log_error
     def iterate_function_on_tableview(self, func, parameter_name, key_names, nonkey_names=None, return_to_results=False):
         """ Runs a function over the values in a tableview parameter - a common tool scenario
 
@@ -358,7 +351,7 @@ class BaseTool(object):
 
         return
 
-    @base.log.log
+    @log_error
     def iterate_function_on_parameter(self, func, parameter_name, key_names, nonkey_names=None, return_to_results=False):
         """ Runs a function over the values in a parameter - a less common tool scenario
 
@@ -395,17 +388,17 @@ class BaseTool(object):
 
         return
 
-    @base.log.log
+    @log_error
     def do_iteration(self, func, rows, key_names, return_to_results):
 
         if not rows:
             raise ValueError("No values or records to process.")
 
         fname = func.__name__
-        base.log.log(func)
+        log_error(func)
 
         rows = [{k: v for k, v in zip(key_names, utils.make_tuple(row))} for row in rows]
-        base.log.info("{} items to process".format(len(rows)))
+        self.info("{} items to process".format(len(rows)))
 
         for row in rows:
             try:
@@ -418,7 +411,7 @@ class BaseTool(object):
                 res = func(row)
                 if return_to_results:
                     try:
-                        self.log.info(self.result.add(res))
+                        self.info(self.result.add(res))
                     except AttributeError:
                         raise ValueError("No result attribute for result record")
 

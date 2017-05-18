@@ -32,7 +32,7 @@ class ExtractParentGeodataTool(BaseTool):
 
     def process(self, data):
 
-        self.log.info(data)
+        self.info(data)
         # self.add_result("TODO")
 
         return
