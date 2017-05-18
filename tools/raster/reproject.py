@@ -35,7 +35,7 @@ class ReprojectRasterTool(BaseTool):
 
         self.log.debug("initialise locals={}".format(locals()))
 
-        self.output_cs = self.parameter_objects[2].value  # need the object for later code to work
+        self.output_cs = self.parameters[2].value  # need the object for later code to work
         self.cell_size = str(self.cell_size)  # this seemed to solve an issue with unicode... strange
 
         if self.overrides != "#":

@@ -5,13 +5,14 @@ from base.method_decorators import input_tableview, input_output_table, paramete
 from arcpy import GetCellValue_management
 from collections import OrderedDict
 
+
 tool_settings = {"label": "Values at Points",
                  "description": "Retrieves the values of rasters at specified points...",
                  "can_run_background": "True",
                  "category": "Raster"}
 
 
-@base.results.result
+@result
 class ValuesAtPointsRasterTool(BaseTool):
     def __init__(self):
 
@@ -40,6 +41,7 @@ class ValuesAtPointsRasterTool(BaseTool):
             raise ValueError("Point dataset '{0}'has unknown spatial reference system ({1})".format(source, self.points_srs))
 
         self.point_rows = utils.get_search_cursor_rows(self.points, ("SHAPE@XY", "OID@"))
+
         self.log.info("{0} points found in '{1}'".format(len(self.point_rows), self.points))
 
         return
@@ -68,8 +70,8 @@ class ValuesAtPointsRasterTool(BaseTool):
             oid = row[1]
             # calc
             xy = "{0} {1}".format(row[0][0], row[0][1])
-            result = GetCellValue_management(ras, xy)
-            val = result.getOutput(0)
+            res = GetCellValue_management(ras, xy)
+            val = res.getOutput(0)
             # get the storage
             id_res = self.result_dict.get(oid, None)
             if not id_res:  # init needed
@@ -91,11 +93,12 @@ class ValuesAtPointsRasterTool(BaseTool):
         result_list = []
 
         for oid, val_dict in self.result_dict.iteritems():
-            # row_dict = {"source_pt_id": oid}
+
             row_dict = OrderedDict()
             row_dict["source_pt_id"] = oid
             for k, v in val_dict.iteritems():
                 row_dict[k] = v
+
             result_list.append(row_dict)
 
         self.result.add(result_list)

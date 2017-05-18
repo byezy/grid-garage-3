@@ -28,7 +28,7 @@ class ListWorkspaceTablesGeodataTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_parameter(self.list, "workspaces", ["workspace"], True)
+        self.iterate_function_on_parameter(self.list, "workspaces", ["workspace"], return_to_results=True)
 
     def list(self, data):
 

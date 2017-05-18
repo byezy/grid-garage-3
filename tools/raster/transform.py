@@ -34,19 +34,34 @@ class TransformRasterTool(BaseTool):
 
     def updateParameters(self, parameters):
 
+        print "updateParameters"
+
         BaseTool.updateParameters(self, parameters)
-        parameters[3].enabled = parameters[4].enabled = (parameters[2].value == 'STRETCH')
+
+        p2, p3, p4 = parameters[2], parameters[3], parameters[4]
+
+        stretch = p2.value == 'STRETCH'
+
+        p3.enabled = p4.enabled = stretch
+
+        if stretch and p3.valueAsText in [None, "", "#"]:
+            p3.setIDMessage("ERROR", 735, p3.displayName)
+
+        if stretch and p4.valueAsText in [None, "", "#"]:
+            p4.setIDMessage("ERROR", 735, p4.displayName)
 
         return
 
     def updateMessages(self, parameters):
 
-        BaseTool.updateMessages(self, parameters)
-        stretch = parameters[2].value == 'STRETCH'
-        if stretch and not parameters[3].valueAsText:
-            parameters[3].setIDMessage("ERROR", 735, parameters[3].displayName)
-        if stretch and not parameters[4].valueAsText:
-            parameters[4].setIDMessage("ERROR", 735, parameters[4].displayName)
+        # print [(i, p.name) for i, p in enumerate(parameters)]
+        #
+        # # BaseTool.updateMessages(self, parameters)
+        # stretch = parameters[2].value == 'STRETCH'
+        # if stretch and not parameters[6].valueAsText:
+        #     parameters[6].setIDMessage("ERROR", 735, parameters[3].displayName)
+        # if stretch and not parameters[7].valueAsText:
+        #     parameters[7].setIDMessage("ERROR", 735, parameters[4].displayName)
 
         return
 

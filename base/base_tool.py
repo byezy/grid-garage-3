@@ -31,17 +31,13 @@ class BaseTool(object):
         # self.stylesheet = self.set_stylesheet()
 
         # hold refs to arcgis args passed to Execute()
-        self.parameter_strings = None
-        self.parameter_objects = None
-        self.arc_messages = None
+        self.parameters = None
 
         # used as stamp for default names etc.
-        self.tool_time_open = utils.time_stamp()
-        self.run_id = "{0}_{1}".format(self.tool_type, self.tool_time_open)
+        self.run_id = "{0}_{1}".format(self.tool_type, utils.time_stamp())
 
         # instance specific, set in derived classes
         self.execution_list = []
-        self.metadata = {}
 
         return
 
@@ -68,14 +64,15 @@ class BaseTool(object):
         """ Returns a parameter based on its name
 
         Args:
-            param_name (): The name of the parameter to return
+            param_name (str): The name of the parameter to return
+            raise_not_found_error (bool): 
 
         Returns:
 
         """
-        if self.parameter_objects:
+        if self.parameters:
 
-            for param in self.parameter_objects:
+            for param in self.parameters:
                 n = getattr(param, "name", None)
                 if n == param_name:
 
@@ -86,19 +83,16 @@ class BaseTool(object):
 
         return
 
-    # @base.log.log
     def getParameterInfo(self):
         """Define parameter definitions"""
 
         return []
 
-    # @base.log.log
     def isLicensed(self):
         """Set whether tool is licensed to execute."""
 
         return True
 
-    # @base.log.log
     def updateParameters(self, parameters):
         """ Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
@@ -110,6 +104,10 @@ class BaseTool(object):
         Returns:
 
         """
+        ps = [(i, p.name) for i, p in enumerate(parameters)]
+        print ps
+        self.log.debug("updateParameters {}".format(ps))
+        # set default result table name
 
         out_tbl_par = None
         for p in parameters:
@@ -117,13 +115,38 @@ class BaseTool(object):
                 out_tbl_par = p
                 break
 
-        # default table name
         if out_tbl_par and out_tbl_par.value == "#run_id#":
             out_tbl_par.value = self.run_id
 
+        # validate workspace and raster format
+
+        out_ws_par = None
+        for p in parameters:
+            if p.name == "output_workspace":
+                out_ws_par = p
+                break
+
+        ras_fmt_par = None
+        for p in parameters:
+            if p.name == "raster_format":
+                ras_fmt_par = p
+                break
+
+        if out_ws_par and ras_fmt_par:
+
+            out_ws_par.clearMessage()
+            ras_fmt_par.clearMessage()
+
+            if out_ws_par.altered or ras_fmt_par.altered:
+
+                ws = out_ws_par.value
+                fmt = ras_fmt_par.value
+
+                if base.utils.is_local_gdb(ws) and fmt != "Esri Grid":
+                    ras_fmt_par.setErrorMessage("Invalid raster format for workspace type")
+
         return
 
-    # @base.log.log
     def updateMessages(self, parameters):
         """
 
@@ -204,41 +227,38 @@ class BaseTool(object):
         Returns:
 
         """
-        # check if we have a function to run
+
         if not self.execution_list:
             raise ValueError("Tool execution list is empty")
 
-        self.arc_messages = messages
-        base.log.configure_logging(messages)
+        self.log.configure_logging(messages)
 
-        base.log.info("Debugging log file is located at '{}'".format(base.log.LOG_FILE))
+        self.log.info("Debugging log file is located at '{}'".format(base.log.LOG_FILE))
 
-        self.parameter_objects = parameters
+        self.parameters = parameters
 
-        [setattr(self, k, v) for k, v in self.get_parameter_dict().iteritems()]
-        base.log.debug("Tool attributes set {}".format(self.__dict__))
+        for k, v in self.get_parameter_dict().iteritems():
+            setattr(self, k, v)
 
-        if hasattr(self, "result"):
+        self.log.debug("Tool attributes set {}".format(self.__dict__))
+
+        try:
             init = self.result.initialise(self.get_parameter_by_name("result_table"),
                                           self.get_parameter_by_name("fail_table"),
                                           self.get_parameter_by_name("output_workspace").value,
                                           self.get_parameter_by_name("result_table_name").value)
-            [base.log.info(x) for x in init]
+            self.log.info(init)
+        except AttributeError:
+            pass
 
-        # run the functions
         with base.log.error_trap(self):
             for f in self.execution_list:
-                if isinstance(f, (list, tuple)):  # expecting to feed a function a function
-                    f1, f2 = f  # for now just limit to 2 deep
-                    # f1 = base.log.log(f1)
-                    # f2 = base.log.log(f2)
-                    f1(f2)
-                else:  # normal case, expecting a function
-                    # f = base.log.log(f)
-                    f()
+                f()
 
-        if hasattr(self, "result"):
-            [base.log.info(w) for w in self.result.write()]
+        try:
+            self.result.write()
+        except AttributeError:
+            pass
 
         return
 
@@ -257,7 +277,7 @@ class BaseTool(object):
         # TODO make multivalue parameters a list
         # TODO see what binning the bloody '#' does to tools
         pd = {}
-        for p in self.parameter_objects:
+        for p in self.parameters:
             name = p.name
             if name in leave_as_object:
                 pd[name] = p
