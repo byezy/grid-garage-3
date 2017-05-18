@@ -44,7 +44,7 @@ class ResampleRasterTool(BaseTool):
 
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.log.info("Resampling {0} -->> {1} ...".format(ras, ras_out))
+        self.info("Resampling {0} -->> {1} ...".format(ras, ras_out))
 
         arcpy.Resample_management(ras, ras_out, self.cell_size, self.resample_type)
 

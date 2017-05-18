@@ -33,7 +33,7 @@ class ReprojectRasterTool(BaseTool):
 
     def initialise(self):
 
-        self.log.debug("initialise locals={}".format(locals()))
+        self.debug("initialise locals={}".format(locals()))
 
         self.output_cs = self.parameters[2].value  # need the object for later code to work
         self.cell_size = str(self.cell_size)  # this seemed to solve an issue with unicode... strange
@@ -45,7 +45,7 @@ class ReprojectRasterTool(BaseTool):
             except:
                 raise ValueError("There is a problem with specified overrides. should be something like 'a:b, c:d,...'")
 
-        self.log.info(["Transformation overrides: {0}".format(self.overrides), "Output CS: {0}".format(self.output_cs.name)])
+        self.info(["Transformation overrides: {0}".format(self.overrides), "Output CS: {0}".format(self.output_cs.name)])
 
         return
 
@@ -65,7 +65,7 @@ class ReprojectRasterTool(BaseTool):
 
         tx = get_transformation(r_in, self.output_cs, self.overrides)
 
-        self.log.info("Projecting {0} into {1} -> {2}".format(r_in, self.output_cs.name, r_out))
+        self.info("Projecting {0} into {1} -> {2}".format(r_in, self.output_cs.name, r_out))
 
         arcpy.ProjectRaster_management(r_in, r_out, self.output_cs, geographic_transform=tx, resampling_type=self.resample_type, cell_size=self.cell_size, Registration_Point=self.rego_point)
 

@@ -45,11 +45,11 @@ class BlockStatisticsRasterTool(BaseTool):
 
         ras_out = make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.log.info("Calculating block statistics on {0}...".format(ras))
+        self.info("Calculating block statistics on {0}...".format(ras))
 
         out = BlockStatistics(ras, self.neighbourhood, self.statistics_type, self.ignore_nodata)
 
-        self.log.info("Saving to {0}...".format(ras_out))
+        self.info("Saving to {0}...".format(ras_out))
 
         out.save(ras_out)
 

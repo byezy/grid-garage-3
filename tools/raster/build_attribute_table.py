@@ -43,7 +43,7 @@ class BuildAttributeTableRasterTool(BaseTool):
 
         utils.validate_geodata(ras, raster=True)
 
-        self.log.info("Building attribute table for {0}...".format(ras))
+        self.info("Building attribute table for {0}...".format(ras))
 
         arcpy.BuildRasterAttributeTable_management(ras, self.overwrite)
 

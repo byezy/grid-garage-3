@@ -53,7 +53,7 @@ class ReclassByTableRasterTool(BaseTool):
 
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self. output_filename_suffix)
 
-        self.log.info("Reclassifying {0} -->> {1}...".format(ras, ras_out))
+        self.info("Reclassifying {0} -->> {1}...".format(ras, ras_out))
 
         arcpy.ReclassByTable_3d(ras, self.in_remap_table, self.from_value_field, self.to_value_field, self.output_value_field, ras_out, self.missing_values)
 

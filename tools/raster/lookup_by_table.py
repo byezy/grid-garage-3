@@ -43,15 +43,15 @@ class LookupByTableRasterTool(BaseTool):
         lookup_fields = data["lookup fields"].replace(" ", "").split(",")
         for f in lookup_fields:
             try:
-                ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix + "_" + f)
-                self.log.info("Lookup field '{0}' in '{1}'".format(f, ras))
+                self.info("Lookup field '{0}' in '{1}'".format(f, ras))
                 out = Lookup(ras, f)
-                self.log.info(out)
-                self.log.info("Saving to {0}".format(ras_out))
+                ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix + "_" + f)
                 out.save(ras_out)
+                self.info("Saved to {0}".format(ras_out))
+
                 self.result.add({"geodata": ras_out, "source_geodata": ras})
             except:
-                self.log.warn("Failed on field '{}'".format(f))
+                self.warn("Failed on field '{}'".format(f))
                 data["geodata"] = ras
                 data["failure_field"] = f
                 self.result.fail(data)

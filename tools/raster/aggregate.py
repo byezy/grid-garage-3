@@ -47,7 +47,7 @@ class AggregateRasterTool(BaseTool):
 
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.log.info("Aggregating {0} -->> {1} ...".format(ras, ras_out))
+        self.info("Aggregating {0} -->> {1} ...".format(ras, ras_out))
 
         out = Aggregate(ras, self.cell_factor, self.aggregation_type, self.extent_handling, self.ignore_nodata)
 

@@ -58,7 +58,7 @@ class TweakValuesRasterTool(BaseTool):
         ndv = ras.noDataValue
         pix_type = ras.pixelType
         if any(x in pix_type for x in ["S", "U"]):
-            self.log.info("Raster pixel type is '{}' (integer)".format(pix_type))
+            self.info("Raster pixel type is '{}' (integer)".format(pix_type))
             try:
                 ndv = int(ndv)
             except:
@@ -72,22 +72,22 @@ class TweakValuesRasterTool(BaseTool):
             except:
                 pass
 
-        self.log.info(["Tweaking raster {}".format(r_in), "\tNoData Value is {}".format(ndv)])
+        self.info(["Tweaking raster {}".format(r_in), "\tNoData Value is {}".format(ndv)])
 
         tweaks = []
 
         if self.scalar:
-            self.log.info('\tScaling by {}'.format(self.scalar))
+            self.info('\tScaling by {}'.format(self.scalar))
             ras *= float(self.scalar)
             tweaks.append('scaled by {}'.format(self.scalar))
 
         if self.constant:
-            self.log.info('\tTranslating by {}'.format(self.constant))
+            self.info('\tTranslating by {}'.format(self.constant))
             ras += float(self.constant)
             tweaks.append('translated by {}'.format(self.constant))
 
         if self.min_val:
-            self.log.info('\tSetting minimum to {} values under will go to {}'.format(self.min_val, self.under_min))
+            self.info('\tSetting minimum to {} values under will go to {}'.format(self.min_val, self.under_min))
             under = self.min_val if self.under_min == 'Minimum' else ndv
             if under == "#":
                 raise ValueError("Raster '{}' does not have a nodata value".format(r_in))
@@ -95,7 +95,7 @@ class TweakValuesRasterTool(BaseTool):
             tweaks.append('Minimum set to {} under set to {}'.format(self.min_val, under))
 
         if self.max_val:
-            self.log.info('\tSetting maximum to {} values over will go to {}'.format(self.max_val, self.over_max))
+            self.info('\tSetting maximum to {} values over will go to {}'.format(self.max_val, self.over_max))
             over = self.max_val if self.over_max == 'Maximum' else ndv
             if over == "#":
                 raise ValueError("Raster '{}' does not have a nodata value".format(r_in))
@@ -103,12 +103,12 @@ class TweakValuesRasterTool(BaseTool):
             tweaks.append('Maximum set to {} over set to {}'.format(self.max_val, over))
 
         if self.integerise:
-            self.log.info('\tIntegerising...')
+            self.info('\tIntegerising...')
             ras = arcpy.sa.Int(ras)
             tweaks.append('integerised (truncation)')
 
         # save and exit
-        self.log.info('\tSaving to {}'.format(r_out))
+        self.info('\tSaving to {}'.format(r_out))
         ras.save(r_out)
 
         return {"geodata": r_out, "source_geodata": r_in, "tweaks": ' & '.join(tweaks)}

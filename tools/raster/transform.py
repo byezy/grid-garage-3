@@ -33,7 +33,7 @@ class TransformRasterTool(BaseTool):
     def updateParameters(self, parameters):
 
         ps = [(i, p.name) for i, p in enumerate(parameters)]
-        self.log.debug("TransformRasterTool.updateParameters {}".format(ps))
+        self.debug("TransformRasterTool.updateParameters {}".format(ps))
 
         p2, p3, p4 = parameters[2], parameters[3], parameters[4]
 
@@ -74,7 +74,7 @@ class TransformRasterTool(BaseTool):
 
         v = arcpy.GetRasterProperties_management(raster, property)
         v = v.getOutput(0)
-        self.log.debug("for raster {} property {} has type {} ".format(raster, property, type(v)))
+        self.debug("for raster {} property {} has type {} ".format(raster, property, type(v)))
 
         return float(v)
 
@@ -85,16 +85,16 @@ class TransformRasterTool(BaseTool):
 
         r_out = utils.make_raster_name(r_in, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.log.info("\tCalculating statistics")
+        self.info("\tCalculating statistics")
         arcpy.CalculateStatistics_management(r_in)
 
         raster_mean = self.get_property(r_in, "MEAN")
         raster_std = self.get_property(r_in, "STD")
         raster_min = self.get_property(r_in, "MINIMUM")
         raster_max = self.get_property(r_in, "MAXIMUM")
-        self.log.info("\tStatistics Mean/Std/Min/Max: {}/{}/{}/{}".format(raster_mean, raster_std, raster_min, raster_max))
+        self.info("\tStatistics Mean/Std/Min/Max: {}/{}/{}/{}".format(raster_mean, raster_std, raster_min, raster_max))
 
-        self.log.info("Transforming raster {} using method {}".format(r_in, self.method))
+        self.info("Transforming raster {} using method {}".format(r_in, self.method))
         ras = arcpy.Raster(r_in)
 
         if self.method == "STANDARDISE":
@@ -123,7 +123,7 @@ class TransformRasterTool(BaseTool):
             ras = (ras - (raster_max - raster_min)) * -1
 
         # save and exit
-        self.log.info('\tSaving to {0}'.format(r_out))
+        self.info('\tSaving to {0}'.format(r_out))
         ras.save(r_out)
 
         data["method"] = self.method

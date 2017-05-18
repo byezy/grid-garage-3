@@ -42,7 +42,7 @@ class ValuesAtPointsRasterTool(BaseTool):
 
         self.point_rows = utils.get_search_cursor_rows(self.points, ("SHAPE@XY", "OID@"))
 
-        self.log.info("{0} points found in '{1}'".format(len(self.point_rows), self.points))
+        self.info("{0} points found in '{1}'".format(len(self.point_rows), self.points))
 
         return
 
@@ -64,7 +64,7 @@ class ValuesAtPointsRasterTool(BaseTool):
         if ras_srs != self.points_srs:  # hack!! needs doing properly
             raise ValueError("Spatial reference systems do not match ({0} != {1})".format(ras_srs, self.points_srs))
 
-        self.log.info("Extracting point values from {0}...".format(ras))
+        self.info("Extracting point values from {0}...".format(ras))
 
         for row in self.point_rows:
             oid = row[1]

@@ -44,7 +44,7 @@ class SetNodataValueRasterTool(BaseTool):
 
         r_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.log.info("Setting NDV {0} on {1} -> {2}".format(self.ndv, ras, r_out))
+        self.info("Setting NDV {0} on {1} -> {2}".format(self.ndv, ras, r_out))
 
         null_ras = arcpy.sa.IsNull(ras)
 
