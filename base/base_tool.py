@@ -54,7 +54,7 @@ class BaseTool(object):
     #     return ast.literal_eval(node_or_string)
 
     @log_error
-    def get_parameter_by_name(self, param_name, raise_not_found_error=False):
+    def get_parameter(self, param_name, raise_not_found_error=False):
         """ Returns a parameter based on its name
 
         Args:
@@ -67,10 +67,12 @@ class BaseTool(object):
         if self.parameters:
 
             for param in self.parameters:
-                n = getattr(param, "name", None)
-                if n == param_name:
-
+                if param.name == param_name:
                     return param
+                # n = getattr(param, "name", None)
+                # if n == param_name:
+                #
+                #     return param
 
         if raise_not_found_error:
             raise ValueError("Parameter {0} not found".format(param_name))
@@ -87,6 +89,7 @@ class BaseTool(object):
 
         return True
 
+    @log_error
     def updateParameters(self, parameters):
         """ Modify the values and properties of parameters before internal
         validation is performed.  This method is called whenever a parameter
@@ -100,6 +103,7 @@ class BaseTool(object):
         """
         ps = [(i, p.name) for i, p in enumerate(parameters)]
         self.debug("BaseTool.updateParameters {}".format(ps))
+
         # set default result table name
 
         out_tbl_par = None
@@ -140,6 +144,7 @@ class BaseTool(object):
 
         return
 
+    @log_error
     def updateMessages(self, parameters):
         """
 
@@ -149,6 +154,7 @@ class BaseTool(object):
         Returns:
 
         """
+        self.debug("Well, in here anyway...")
         # out_ws_par = None
         # for p in parameters:
         #     if p.name == "output_workspace":
@@ -165,39 +171,39 @@ class BaseTool(object):
         #
         #     out_ws_par.clearMessage()
         #     ras_fmt_par.clearMessage()
-        #     # base.log.debug("messages cleared")
+        #     # self.debug("messages cleared")
         #
         #     if out_ws_par.altered or ras_fmt_par.altered:
-        #         # base.log.debug("out_ws_par.altered or out_rasfmt_par.altered")
+        #         # self.debug("out_ws_par.altered or out_rasfmt_par.altered")
         #
         #         ws = out_ws_par.value
         #         fmt = ras_fmt_par.value
-        #         # base.log.debug("ws={} fmt={}".format(ws, fmt))
+        #         # self.debug("ws={} fmt={}".format(ws, fmt))
         #         if base.utils.is_local_gdb(ws) and fmt != "Esri Grid":
         #             ras_fmt_par.setErrorMessage("Invalid raster format for workspace type")
         # try:
-        #     # base.log.debug("updateMessages")
+        #     # self.debug("updateMessages")
         #
         #     out_ws_par = self.get_parameter_by_name("output_workspace")  # None
         #     out_rasfmt_par = self.get_parameter_by_name("raster_format")  # None
         #
         #     if out_ws_par and out_rasfmt_par:
-        #         # base.log.debug("out_ws_par and out_rasfmt_par")
+        #         # self.debug("out_ws_par and out_rasfmt_par")
         #
         #         out_ws_par.clearMessage()
         #         out_rasfmt_par.clearMessage()
-        #         # base.log.debug("messages cleared")
+        #         # self.debug("messages cleared")
         #
         #         if out_ws_par.altered or out_rasfmt_par.altered:
-        #             # base.log.debug("out_ws_par.altered or out_rasfmt_par.altered")
+        #             # self.debug("out_ws_par.altered or out_rasfmt_par.altered")
         #
         #             ws = out_ws_par.value
         #             fmt = out_rasfmt_par.value
-        #             # base.log.debug("ws={} fmt={}".format(ws, fmt))
+        #             # self.debug("ws={} fmt={}".format(ws, fmt))
         #             if base.utils.is_local_gdb(ws) and fmt != "Esri Grid":
         #                 out_rasfmt_par.setErrorMessage("Invalid raster format for workspace type")
         # except Exception as e:
-        #     # base.log.debug("updateMessages error : {}".format(e))
+        #     # self.debug("updateMessages error : {}".format(e))
         #     print str(e)
 
         # BaseTool.updateMessages(self, parameters)
@@ -236,10 +242,10 @@ class BaseTool(object):
         self.debug("Tool attributes set {}".format(self.__dict__))
 
         try:
-            init = self.result.initialise(self.get_parameter_by_name("result_table"),
-                                          self.get_parameter_by_name("fail_table"),
-                                          self.get_parameter_by_name("output_workspace").value,
-                                          self.get_parameter_by_name("result_table_name").value)
+            init = self.result.initialise(self.get_parameter("result_table"),
+                                          self.get_parameter("fail_table"),
+                                          self.get_parameter("output_workspace").value,
+                                          self.get_parameter("result_table_name").value)
             self.info(init)
         except AttributeError:
             pass
@@ -311,9 +317,9 @@ class BaseTool(object):
         Returns:
 
         """
-        base.log.debug("locals = {}".format(locals()))
+        self.debug("locals = {}".format(locals()))
 
-        param = self.get_parameter_by_name(parameter_name)
+        param = self.get_parameter(parameter_name)
         if param.datatype != "Table View":
             raise ValueError("That parameter is not a table or table view ({0})".format(param.name))
 
@@ -336,7 +342,7 @@ class BaseTool(object):
         # map fields
         num_fields = len(key_names)  # [rf1, rf2, ...]
         f_names = ["{0}_field_{1}".format(parameter_name, i) for i in range(0, num_fields)]  # [f_0, f_1, ...]
-        f_vals = [self.get_parameter_by_name(f_name).valueAsText for f_name in f_names]
+        f_vals = [self.get_parameter(f_name).valueAsText for f_name in f_names]
         f_vals.append(proc_hist_fieldname)
         if nonkey_names:
             f_vals.extend(nonkey_names)
@@ -364,26 +370,27 @@ class BaseTool(object):
 
         """
 
-        param = self.get_parameter_by_name(parameter_name)
+        param = self.get_parameter(parameter_name)
         multi_val = getattr(param, "multiValue", False)
-        base.log.debug("multiValue attribute is {}".format(multi_val))
+        self.debug("multiValue attribute is {}".format(multi_val))
 
         if param.datatype == "Table View":
             raise ValueError("No, use 'iterate_function_on_tableview'")
 
-        base.log.debug("param.valueAsText =  {}".format(param.valueAsText))
-        base.log.debug("param.valueAsText.split(';' =  {}".format(param.valueAsText.split(";")))
+        self.debug("param.valueAsText =  {}".format(param.valueAsText))
+        self.debug("param.valueAsText.split(';' =  {}".format(param.valueAsText.split(";")))
         rows = param.valueAsText.split(";") if multi_val else [param.valueAsText]
 
         for row in rows:  # add proc_hist field
             base.utils.make_tuple(row).append("")
 
-        base.log.debug("Processing rows will be {}".format(rows))
+        self.debug("Processing rows will be {}".format(rows))
 
         # iterate
         key_names.append("proc_hist")
         if nonkey_names:
             key_names.extend(nonkey_names)
+
         self.do_iteration(func, rows, key_names, return_to_results)
 
         return
@@ -407,7 +414,7 @@ class BaseTool(object):
                 except AttributeError:
                     pass
 
-                base.log.debug("Running {} with data={}".format(fname, row))
+                self.debug("Running {} with data={}".format(fname, row))
                 res = func(row)
                 if return_to_results:
                     try:
