@@ -224,7 +224,7 @@ class BaseTool(object):
         if not self.execution_list:
             raise ValueError("Tool execution list is empty")
 
-        self.log.configure_logging(messages)
+        base.log.configure_logging(messages)
 
         self.info("Debugging log file is located at '{}'".format(base.log.LOG_FILE))
 
