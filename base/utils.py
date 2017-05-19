@@ -2,7 +2,7 @@ import datetime
 import os
 from collections import OrderedDict
 from re import compile
-import base.log
+# import base.log
 import arcpy as ap
 import collections
 import csv
@@ -66,7 +66,7 @@ class UnmatchedSrsError(ValueError):
 #     return ap.ListFields(dataset, wild_card, field_type)
 
 
-@base.log.log_error
+# @base.log.log_error
 def table_conversion(in_rows, out_path, out_name):
 
     """ Copy a file-based table to a local database, returns full path to new table if successful"""
@@ -99,7 +99,8 @@ def table_conversion(in_rows, out_path, out_name):
 
     except Exception as e:
         # ap.AddWarning()
-        base.log.error("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
+        # raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
+        pass
 
     try:
         # TableToTable_conversion (in_rows, out_path, out_name, {where_clause}, {field_mapping}, {config_keyword})
@@ -107,13 +108,13 @@ def table_conversion(in_rows, out_path, out_name):
         ret = os.path.join(out_path, out_name)
 
     except Exception as e:
-        base.log.error(e)
+        # base.log.error(e)
         ret = None
 
     return ret
 
 
-@base.log.log_error
+# @base.log.log_error
 def describe_arc(geodata):
 
     if not geodata_exists(geodata):
@@ -122,38 +123,36 @@ def describe_arc(geodata):
     return ap.Describe(geodata)
 
 
-@base.log.log_error
+# @base.log.log_error
 def is_local_gdb(workspace):
     return describe_arc(workspace).workspaceType == "LocalDatabase"
 
 
-@base.log.log_error
+# @base.log.log_error
 def is_file_system(workspace):
     return describe_arc(workspace).workspaceType == "FileSystem"
 
 
-@base.log.log_error
-def get_search_cursor_rows(in_table, field_names, where_clause=None, add_fields=[]):
+# @base.log.log_error
+def get_search_cursor_rows(in_table, field_names, where_clause=None):
 
-    @base.log.log_error
     def _get_search_cursor(in_table_sc, field_names_sc, where_clause_sc=where_clause, spatial_reference=None, explode_to_points=None, sql_clause=None):
 
-        base.log.debug(locals())
+        # base.log.debug(locals())
 
         return ap.da.SearchCursor(in_table_sc, field_names_sc, where_clause_sc, spatial_reference, explode_to_points, sql_clause)
 
     # get a search cursor, listify it, release it
     sc = _get_search_cursor(in_table, field_names, where_clause_sc=where_clause)
-    # rows = [row.append("") for row in sc]
     rows = [row for row in sc]
     del sc
 
-    base.log.debug("Returning rows = {}".format(rows))
+    # base.log.debug("Returning rows = {}".format(rows))
 
     return rows
 
 
-@base.log.log_error
+# @base.log.log_error
 def geodata_exists(geodata):
     if geodata:
         return ap.Exists(geodata)
@@ -161,12 +160,12 @@ def geodata_exists(geodata):
         return False
 
 
-@base.log.log_error
+# @base.log.log_error
 def make_tuple(ob):
     return ob if isinstance(ob, (list, tuple)) else [ob]
 
 
-@base.log.log_error
+# @base.log.log_error
 def split_up_filename(filename):
     """ Return strings representing the parts of the filename.
 
@@ -180,7 +179,7 @@ def split_up_filename(filename):
     return the_path, basename, name, ext
 
 
-@base.log.log_error
+# @base.log.log_error
 def time_stamp(fmt='%Y%m%d_%H%M%S'):
     """ Return a current time stamp.
 
@@ -192,7 +191,7 @@ def time_stamp(fmt='%Y%m%d_%H%M%S'):
     return datetime.datetime.now().strftime(fmt)
 
 
-@base.log.log_error
+# @base.log.log_error
 def join_up_filename(workspace, filename, ext=''):
     """ Joins file elements into a full path and name.
 
@@ -209,7 +208,7 @@ def join_up_filename(workspace, filename, ext=''):
     return os.path.join(workspace, filename) + ext
 
 
-@base.log.log_error
+# @base.log.log_error
 def get_ordered_dict_from_keys(key_seq, initial_val):
     return OrderedDict.fromkeys(sorted(key_seq), initial_val)
 
@@ -271,7 +270,7 @@ def find_date(s):
 #     x, y, z = proj_string.split("[", 2)
 #     return y.split(",")[0].strip("'")
 
-@base.log.log_error
+# @base.log.log_error
 def parse_proj_string_for_name(proj_string):
     # s = PROJCS['GDA_1994_Australia_Albers', GEOGCS[
     #     'GCS_GDA_1994', DATUM['D_GDA_1994', SPHEROID['GRS_1980', 6378137.0, 298.257222101]], PRIMEM['Greenwich', 0.0],
@@ -282,7 +281,7 @@ def parse_proj_string_for_name(proj_string):
     return y.split(",")[0].strip("'")
 
 
-@base.log.log_error
+# @base.log.log_error
 def make_raster_name(like_name, out_wspace, ext='', prefix='', suffix=''):
     _, __, r_name, r_ext = split_up_filename(like_name)
 
@@ -295,7 +294,7 @@ def make_raster_name(like_name, out_wspace, ext='', prefix='', suffix=''):
     return os.path.join(out_wspace, raster_name + ext)
 
 
-@base.log.log_error
+# @base.log.log_error
 def make_table_name(like_name, out_wspace, ext='', prefix='', suffix=''):
     _, __, t_name, t_ext = split_up_filename(like_name)
 
@@ -308,7 +307,7 @@ def make_table_name(like_name, out_wspace, ext='', prefix='', suffix=''):
     return os.path.join(out_wspace, table_name + ext)
 
 
-@base.log.log_error
+# @base.log.log_error
 def make_vector_name(like_name, out_wspace, ext='', prefix='', suffix=''):
     _, __, v_name, v_ext = split_up_filename(like_name)
 
@@ -321,7 +320,7 @@ def make_vector_name(like_name, out_wspace, ext='', prefix='', suffix=''):
     return os.path.join(out_wspace, vector_name + ext)
 
 
-@base.log.log_error
+# @base.log.log_error
 def is_table(item):
     if not geodata_exists(item):
         raise DoesNotExistError(item)
@@ -333,7 +332,7 @@ def is_table(item):
         return False
 
 
-@base.log.log_error
+# @base.log.log_error
 def is_vector(item):
     if not geodata_exists(item):
         raise DoesNotExistError(item)
@@ -345,7 +344,7 @@ def is_vector(item):
         return False
 
 
-@base.log.log_error
+# @base.log.log_error
 def is_raster(item):
     if not geodata_exists(item):
         raise DoesNotExistError(item)
@@ -357,7 +356,7 @@ def is_raster(item):
         return False
 
 
-@base.log.log_error
+# @base.log.log_error
 def walk(workspace, data_types=None, types=None, followlinks=True):
     x = []
     for root, dirs, files in ap.da.Walk(workspace, datatype=data_types, type=types, followlinks=followlinks):
@@ -366,7 +365,7 @@ def walk(workspace, data_types=None, types=None, followlinks=True):
     return x
 
 
-@base.log.log_error
+# @base.log.log_error
 def describe(geodata):
 
     describe_field_groups = dict(
@@ -450,7 +449,7 @@ def describe(geodata):
     #         update({"Band_{0}".format(i): bp})
 
 
-@base.log.log_error
+# @base.log.log_error
 def get_transformation(in_ds, out_cs, overrides=None):
 
     cs_in = get_srs(in_ds, raise_unknown_error=True, as_object=True)
@@ -471,13 +470,13 @@ def get_transformation(in_ds, out_cs, overrides=None):
         lst = ap.ListTransformations(cs_in, out_cs)
     except Exception as e:
         e = ValueError("cs_in= " + cs_in + " out_cs= " + out_cs + " e: " + str(e))
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
     if lst:
         shortest = min(lst, key=len)
     else:
         e = ValueError("Datum transformation was not found for {0} (1) -> {2}".format(in_ds, cs_in, out_cs))
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
 
     if overrides:
@@ -502,14 +501,14 @@ def get_transformation(in_ds, out_cs, overrides=None):
     #         shortest = ov
 
 
-@base.log.log_error
+# @base.log.log_error
 def get_srs(geodata, raise_unknown_error=False, as_object=False):
 
     srs = ap.Describe(geodata).spatialReference
 
     if "unknown" in srs.name.lower() and raise_unknown_error:
         e = UnknownSrsError(geodata)
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
 
     if as_object:
@@ -520,12 +519,12 @@ def get_srs(geodata, raise_unknown_error=False, as_object=False):
     return val
 
 
-@base.log.log_error
+# @base.log.log_error
 def validate_geodata(geodata, raster=False, vector=False, table=False, srs_known=False):
 
     if not geodata_exists(geodata):
         e = DoesNotExistError(geodata)
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
 
     d = ap.Describe(geodata)
@@ -533,22 +532,22 @@ def validate_geodata(geodata, raster=False, vector=False, table=False, srs_known
         dt = d.dataType
     except:
         e = UnknownDataTypeError(geodata, "No datatype property")
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
 
     if raster and dt not in ["RasterDataset"]:
         e = NotRasterError(geodata, dt)
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
 
     if vector and dt not in ["FeatureClass", "ShapeFile"]:
         e = NotVectorError(geodata, dt)
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
 
     if table and dt not in ["Table", "TableView"]:
         e = NotTableError(geodata, dt)
-        base.log.debug("Raising {}".format(e))
+        # base.log.debug("Raising {}".format(e))
         raise e
 
     if srs_known:
@@ -557,7 +556,7 @@ def validate_geodata(geodata, raster=False, vector=False, table=False, srs_known
     return
 
 
-@base.log.log_error
+# @base.log.log_error
 def compare_srs(srs1, srs2, raise_no_match_error=False, other_condition=True):
 
     return_value = False
@@ -569,13 +568,13 @@ def compare_srs(srs1, srs2, raise_no_match_error=False, other_condition=True):
     else:
         if raise_no_match_error:
             e = UnmatchedSrsError(srs1, srs2)
-            base.log.debug("Raising {}".format(e))
+            # base.log.debug("Raising {}".format(e))
             raise e
 
     return return_value
 
 
-@base.log.log_error
+# @base.log.log_error
 def get_band_nodata_value(raster, bandindex=1):
 
     d = ap.Describe(os.path.join(raster, "Band_{}".format(bandindex)))
@@ -584,7 +583,7 @@ def get_band_nodata_value(raster, bandindex=1):
     except:
         ndv = "#"
 
-    base.log.debug("ndv={}".format(ndv))
+    # base.log.debug("ndv={}".format(ndv))
 
     return ndv
 

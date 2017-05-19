@@ -4,8 +4,8 @@ Created on Thu Sep  1 10:48:26 2016
 
 @author: byed
 """
-import base
 from base import utils
+from base import log
 from base.log import log_error
 import arcpy
 
@@ -14,65 +14,28 @@ class BaseTool(object):
 
     @log_error
     def __init__(self, settings):
-        """ Define the tool (tool name is the name of the class).
-        Args:
-            settings (): A dictionary implemented in derived classes
-        """
-        self.debug = base.log.debug
-        self.info = base.log.info
-        self.warn = base.log.warn
 
-        # the essentials
+        self.debug = log.debug
+        self.info = log.info
+        self.warn = log.warn
         self.label = settings.get("label", "label not set")
         self.description = settings.get("description", "description not set")
         self.canRunInBackground = settings.get("can_run_background", False)
         self.category = settings.get("category", False)
-        # self.stylesheet = self.set_stylesheet()
-
         self.parameters = None
         self.run_id = "{0}_{1}".format(type(self).__name__, utils.time_stamp())
         self.execution_list = []
 
         return
 
-    # @staticmethod
-    # def set_stylesheet():
-    #     """ Set the tool stylesheet.
-    #
-    #     Returns:
-    #
-    #     """
-    #     style_path = os.path.split(os.path.realpath(__file__))[0]  # base
-    #     style_path = os.path.split(style_path)[0]  # grid_garage_3
-    #     style_path = os.path.join(style_path, "style")
-    #     xls1 = os.path.join(style_path, "MdDlgContent.xsl")
-    #     xls2 = os.path.join(style_path, "MdDlgHelp.xsl")
-    #     return ";".join([xls1, xls2])
-
-    # @staticmethod
-    # def evaluate(node_or_string):
-    #     return ast.literal_eval(node_or_string)
-
     @log_error
     def get_parameter(self, param_name, raise_not_found_error=False):
-        """ Returns a parameter based on its name
 
-        Args:
-            param_name (str): The name of the parameter to return
-            raise_not_found_error (bool): 
-
-        Returns:
-
-        """
         if self.parameters:
 
             for param in self.parameters:
                 if param.name == param_name:
                     return param
-                # n = getattr(param, "name", None)
-                # if n == param_name:
-                #
-                #     return param
 
         if raise_not_found_error:
             raise ValueError("Parameter {0} not found".format(param_name))
@@ -80,27 +43,16 @@ class BaseTool(object):
         return
 
     def getParameterInfo(self):
-        """Define parameter definitions"""
 
         return []
 
     def isLicensed(self):
-        """Set whether tool is licensed to execute."""
 
         return True
 
     @log_error
     def updateParameters(self, parameters):
-        """ Modify the values and properties of parameters before internal
-        validation is performed.  This method is called whenever a parameter
-        has been changed.
 
-        Args:
-            parameters (): The tool parameters
-
-        Returns:
-
-        """
         ps = [(i, p.name) for i, p in enumerate(parameters)]
         self.debug("BaseTool.updateParameters {}".format(ps))
 
@@ -139,21 +91,14 @@ class BaseTool(object):
                 ws = out_ws_par.value
                 fmt = ras_fmt_par.value
 
-                if base.utils.is_local_gdb(ws) and fmt != "Esri Grid":
+                if utils.is_local_gdb(ws) and fmt != "Esri Grid":
                     ras_fmt_par.setErrorMessage("Invalid raster format for workspace type")
 
         return
 
     @log_error
     def updateMessages(self, parameters):
-        """
 
-        Args:
-            parameters (): The tool parameters
-
-        Returns:
-
-        """
         self.debug("Well, in here anyway...")
         # out_ws_par = None
         # for p in parameters:
@@ -217,22 +162,13 @@ class BaseTool(object):
 
     @log_error
     def execute(self, parameters, messages):
-        """ The source code of the tool.
 
-        Args:
-            parameters (): The tool parameters
-            messages ():  Associated messages
-
-        Returns:
-
-        """
+        log.configure_logging(messages)
 
         if not self.execution_list:
             raise ValueError("Tool execution list is empty")
 
-        base.log.configure_logging(messages)
-
-        self.info("Debugging log file is located at '{}'".format(base.log.LOG_FILE))
+        self.info("Debugging log file is located at '{}'".format(log.LOG_FILE))
 
         self.parameters = parameters
 
@@ -250,7 +186,7 @@ class BaseTool(object):
         except AttributeError:
             pass
 
-        with base.log.error_trap(self):
+        with log.error_trap(self):
             for f in self.execution_list:
                 f()
 
@@ -382,7 +318,7 @@ class BaseTool(object):
         rows = param.valueAsText.split(";") if multi_val else [param.valueAsText]
 
         for row in rows:  # add proc_hist field
-            base.utils.make_tuple(row).append("")
+            utils.make_tuple(row).append("")
 
         self.debug("Processing rows will be {}".format(rows))
 
@@ -424,7 +360,7 @@ class BaseTool(object):
 
             except Exception as e:
 
-                base.log.error("error executing {}: {}".format(fname, str(e)))
+                log.error("error executing {}: {}".format(fname, str(e)))
                 try:
                     self.result.fail(row)
                 except AttributeError:

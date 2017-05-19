@@ -1,4 +1,3 @@
-from __future__ import print_function
 import contextlib
 import functools
 import os
@@ -6,10 +5,8 @@ import inspect
 import logging
 
 
-# basic settings
 APPDATA_PATH = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "GridGarage")
-LOG_FILE = os.path.join(APPDATA_PATH, "gg3.log")
-LOGGER = None
+LOG_FILE = os.path.join(APPDATA_PATH, "gridgarage.log")
 
 
 def make_tuple(ob):
@@ -18,47 +15,57 @@ def make_tuple(ob):
 
 
 def debug(message):
+
     message = make_tuple(message)
 
-    if LOGGER:
-        [LOGGER.debug(msg) for msg in message]
-    else:
-        [print("DEBUG: " + str(msg)) for msg in message]
+    for msg in message:
+        try:
+            logging.getLogger("gridgarage").debug(msg)
+        except:
+            print "DEBUG: " + str(msg)
 
 
 def info(message):
+
     message = make_tuple(message)
 
-    if LOGGER:
-        [LOGGER.info(msg) for msg in message]
-    else:
-        [print("INFO: " + str(msg)) for msg in message]
+    for msg in message:
+        try:
+            logging.getLogger("gridgarage").info(msg)
+        except:
+            print "INFO: " + str(msg)
 
 
 def warn(message):
+
     message = make_tuple(message)
 
-    if LOGGER:
-        [LOGGER.warn(msg) for msg in message]
-    else:
-        [print("WARNING: " + str(msg)) for msg in message]
+    for msg in message:
+        try:
+            logging.getLogger("gridgarage").warn(msg)
+        except:
+            print "WARN: " + str(msg)
 
 
 def error(message):
+
     message = make_tuple(message)
 
-    if LOGGER:
-        [LOGGER.error(msg) for msg in message]
-    else:
-        [print("ERROR: " + str(msg)) for msg in message]
-
-
-# set after import by base tool class
-_ARC_MESSAGES = None
+    for msg in message:
+        try:
+            logging.getLogger("gridgarage").error(msg)
+        except:
+            print "ERROR: " + str(msg)
 
 
 class ArcStreamHandler(logging.StreamHandler):
     """ Logging handler to log messages to ArcGIS """
+
+    def __init__(self, messages):
+
+        logging.StreamHandler.__init__(self)
+
+        self.messages = messages
 
     def emit(self, record):
         """ Emit the record to the ArcGIS messages object
@@ -69,29 +76,24 @@ class ArcStreamHandler(logging.StreamHandler):
         Returns:
 
         """
-        if not _ARC_MESSAGES:
-            return
 
         msg = self.format(record)
         msg = msg.replace("\n", ", ").replace("\t", " ").replace("  ", " ")
         lvl = record.levelno
 
         if lvl in [logging.ERROR, logging.CRITICAL]:
-            _ARC_MESSAGES.addWarningMessage(msg)
+            self.messages.addWarningMessage(msg)
 
         elif lvl == logging.WARNING:
-            _ARC_MESSAGES.addWarningMessage(msg)
+            self.messages.addWarningMessage(msg)
 
         else:
-            _ARC_MESSAGES.addMessage(msg)
+            self.messages.addMessage(msg)
 
         return
 
 
 def configure_logging(arc_messages):
-
-    global _ARC_MESSAGES
-    _ARC_MESSAGES = arc_messages
 
     if not os.path.exists(LOG_FILE):
 
@@ -102,28 +104,27 @@ def configure_logging(arc_messages):
         arc_messages.AddMessage("Creating log file {}".format(LOG_FILE))
         open(LOG_FILE, 'a').close()
 
-    global LOGGER
-    LOGGER = logging.getLogger('gg3')
+    logger = logging.getLogger('gridgarage')
 
-    if len(LOGGER.handlers):  # then this has already been done for this logger instance
+    if len(logger.handlers):  # then this has already been done for this logger instance
         return
 
-    LOGGER.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d %(levelname)s %(module)s %(funcName)s %(lineno)s %(message)s", datefmt="%Y%m%d %H%M%S")
 
     file_handler = logging.FileHandler(LOG_FILE)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
-    LOGGER.addHandler(file_handler)
-    LOGGER.debug("FileHandler added")
+    logger.addHandler(file_handler)
+    logger.debug("FileHandler added")
 
-    ah = ArcStreamHandler()
+    ah = ArcStreamHandler(arc_messages)
     ah.setLevel(logging.INFO)
-    LOGGER.addHandler(ah)
-    LOGGER.debug("ArcLogHandler added")
+    logger.addHandler(ah)
+    logger.debug("ArcLogHandler added")
 
-    LOGGER.debug("Logging configured")
+    logger.debug("Logging configured")
 
     return
 
@@ -147,17 +148,12 @@ def error_trap(context):
     _in = "IN context= " + idx
     _out = "OUT context= " + idx
 
-    if not LOGGER:
-        say = err = print
-    else:
-        say, err = LOGGER.debug, LOGGER.error
-
     try:
-        say(_in)
+        debug(_in)
         yield
-        say(_out)
+        debug(_out)
     except Exception as e:
-        err(str(e))
+        error(str(e))
         raise e
 
     return
@@ -165,16 +161,14 @@ def error_trap(context):
 
 def log_error(f):
     """ A decorator to trap and log exceptions """
+
     @functools.wraps(f)
     def log_wrap(*args, **kwargs):
+
+        debug(str(dir(f)))
+
         with error_trap(f):
+
             return f(*args, **kwargs)
 
     return log_wrap
-
-
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
