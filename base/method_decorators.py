@@ -148,14 +148,14 @@ def input_tableview(name, display_name, multi_value, required_fields):
     pars = [par]
 
     # create dependencies
-    i = 0
+    # i = 0
     for rf in required_fields:
         if ":" not in rf:  # more info is included
             raise ValueError("Bad 'required_fields' string")  # def-time
 
         f_alias, f_name, f_default = rf.split(":")
 
-        p = arcpy.Parameter(name="{0}_field_{1}".format(name, i),
+        p = arcpy.Parameter(name="{0}_field_{1}".format(name, f_name),
                             displayName="Field for {0}".format(f_alias),
                             datatype="Field",
                             parameterType="Required",
@@ -165,7 +165,7 @@ def input_tableview(name, display_name, multi_value, required_fields):
             p.value = f_name
         p.parameterDependencies = [name]  # should be constant
         pars.append(p)
-        i += 1
+        # i += 1
 
     def decorator(f):
         @functools.wraps(f)

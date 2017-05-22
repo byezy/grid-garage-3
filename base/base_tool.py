@@ -277,7 +277,8 @@ class BaseTool(object):
 
         # map fields
         num_fields = len(key_names)  # [rf1, rf2, ...]
-        f_names = ["{0}_field_{1}".format(parameter_name, i) for i in range(0, num_fields)]  # [f_0, f_1, ...]
+        # f_names = ["{0}_field_{1}".format(parameter_name, i) for i in range(0, num_fields)]  # [f_0, f_1, ...]
+        f_names = ["{0}_field_{1}".format(parameter_name, k) for k in key_names]  # [f_0, f_1, ...]
         f_vals = [self.get_parameter(f_name).valueAsText for f_name in f_names]
         f_vals.append(proc_hist_fieldname)
         if nonkey_names:
