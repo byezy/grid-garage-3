@@ -3,8 +3,9 @@ from base.results import result
 from base.method_decorators import input_output_table, input_tableview
 from arcpy import Rename_management
 
+
 tool_settings = {"label": "Rename",
-                 "description": "Renames datasets to a new name specified in the 'new name' field...",
+                 "description": "Renames datasets to a new name specified by the 'new name' field in the input table",
                  "can_run_background": "True",
                  "category": "Geodata"}
 
@@ -13,7 +14,9 @@ tool_settings = {"label": "Rename",
 class RenameGeodataTool(BaseTool):
 
     def __init__(self):
+
         BaseTool.__init__(self, tool_settings)
+
         self.execution_list = [self.iterate]
 
         return
@@ -31,7 +34,6 @@ class RenameGeodataTool(BaseTool):
         return
 
     def rename(self, data):
-        self.info(data)
 
         geodata = data["geodata"]
         new_geodata = data["candidate_name"]

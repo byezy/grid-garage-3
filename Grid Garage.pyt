@@ -32,7 +32,7 @@ from tools.raster.transform import TransformRasterTool
 from tools.raster.tweak_values import TweakValuesRasterTool
 # from tools.raster.zonal_counts import ZonalCountsRasterTool
 # metadata tools
-from tools.metadata.identify import IdentifyMetadataTool
+from tools.metadata.audit import AuditMetadataTool
 from tools.metadata.create_tips import CreateTipsTableMetadataTool
 from tools.metadata.import_tips import ImportTipFilesToTableMetadataTool
 from tools.metadata.export_tips import ExportTipsToFileMetadataTool
@@ -78,7 +78,7 @@ class Toolbox(object):
                         TweakValuesRasterTool}  # ,
                         # ZonalCountsRasterTool}
 
-        metadata_tools = {IdentifyMetadataTool,
+        metadata_tools = {AuditMetadataTool,
                           CreateTipsTableMetadataTool,
                           ImportTipFilesToTableMetadataTool,
                           ExportTipsToFileMetadataTool,
