@@ -501,75 +501,76 @@ def get_transformation(in_ds, out_cs, overrides=None):
     #         shortest = ov
 
 
-# @base.log.log_error
 def get_srs(geodata, raise_unknown_error=False, as_object=False):
 
-    srs = ap.Describe(geodata).spatialReference
+    if not geodata_exists(geodata):
+
+        raise DoesNotExistError(geodata)
+
+    try:
+        srs = ap.Describe(geodata).spatialReference
+    except:
+        raise ValueError("'{}' has no 'spatialReference' property".format(geodata))
 
     if "unknown" in srs.name.lower() and raise_unknown_error:
-        e = UnknownSrsError(geodata)
-        # base.log.debug("Raising {}".format(e))
-        raise e
+
+        raise UnknownSrsError(geodata)
 
     if as_object:
-        val = srs
+        return srs
     else:
-        val = srs.name
-
-    return val
+        return srs.name
 
 
-# @base.log.log_error
-def validate_geodata(geodata, raster=False, vector=False, table=False, srs_known=False):
+def validate_geodata(geodata, raster=False, vector=False, table=False, srs_known=False, message_func=None):
+
+    if message_func:
+        message_func("Validating '{}'".format(geodata))
 
     if not geodata_exists(geodata):
-        e = DoesNotExistError(geodata)
-        # base.log.debug("Raising {}".format(e))
-        raise e
 
-    d = ap.Describe(geodata)
+        raise DoesNotExistError(geodata)
+
     try:
-        dt = d.dataType
+        dt = ap.Describe(geodata).dataType
     except:
-        e = UnknownDataTypeError(geodata, "No datatype property")
-        # base.log.debug("Raising {}".format(e))
-        raise e
+        raise UnknownDataTypeError(geodata, "No datatype property")
 
     if raster and dt not in ["RasterDataset"]:
-        e = NotRasterError(geodata, dt)
-        # base.log.debug("Raising {}".format(e))
-        raise e
+
+        raise NotRasterError(geodata, dt)
 
     if vector and dt not in ["FeatureClass", "ShapeFile"]:
-        e = NotVectorError(geodata, dt)
-        # base.log.debug("Raising {}".format(e))
-        raise e
+
+        raise NotVectorError(geodata, dt)
 
     if table and dt not in ["Table", "TableView"]:
-        e = NotTableError(geodata, dt)
-        # base.log.debug("Raising {}".format(e))
-        raise e
+
+        raise NotTableError(geodata, dt)
 
     if srs_known:
+
         get_srs(geodata, raise_unknown_error=True)
 
     return
 
 
-# @base.log.log_error
 def compare_srs(srs1, srs2, raise_no_match_error=False, other_condition=True):
 
     return_value = False
 
     if not other_condition:
+
         return_value = False
+
     elif srs1 == srs2:
+
         return_value = True
+
     else:
         if raise_no_match_error:
-            e = UnmatchedSrsError(srs1, srs2)
-            # base.log.debug("Raising {}".format(e))
-            raise e
+
+            raise UnmatchedSrsError(srs1, srs2)
 
     return return_value
 

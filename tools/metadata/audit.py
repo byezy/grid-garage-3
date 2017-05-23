@@ -2,12 +2,10 @@ from base.base_tool import BaseTool
 from base.results import result
 from base.utils import split_up_filename, validate_geodata
 from base.method_decorators import input_tableview, input_output_table
-# from base.log import log_error
 import arcpy
 from os.path import exists, join
-# from collections import OrderedDict
-# import arcpy_metadata as md
 from hermes import Paperwork
+from datetime import datetime
 
 
 tool_settings = {"label": "Audit",
@@ -38,27 +36,22 @@ class AuditMetadataTool(BaseTool):
 
         geodata = data["geodata"]
 
-        validate_geodata(geodata)
+        validate_geodata(geodata, message_func=self.info)
 
         self.info("Auditing {0}".format(geodata))
 
         desc = arcpy.Describe(geodata)
 
         pw = Paperwork(dataset=geodata)
+
         meta = pw.convert()
+        meta['metadata']['grid_garage'] = {}
+        # meta['metadata']['grid_garage']['metadata_audit'] = {"@date": datetime.now().time(), }
 
-        # metadata_retrieved = desc.metadataRetrieved
-        # self.info("metadataRetrieved: {}".format(metadata_retrieved))
+        pw.save(meta)
 
-        # self.info(md.MetadataEditor)
-        # metadata = md.MetadataEditor(dataset=geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
-        # self.info(metadata.__dict__)
-        # metadata.finish()
-
-        tip_file, tip = "N/A", None
-        xml_file, xml = "N/A", None
-        # html_file, html = "N/A", None
-        # pdf_file, pdf = "N/A", None
+        tip_file = tip = None
+        xml_file = xml = None
 
         workspace_type = arcpy.Describe(desc.path).workspaceType
 
