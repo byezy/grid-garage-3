@@ -4,27 +4,244 @@ Created on Thu Sep  1 10:48:26 2016
 
 @author: byed
 """
-from base import utils
-from base import log
-from base.log import log_error
+from __future__ import print_function
+from utils import static_vars, make_tuple, is_local_gdb
+from sys import exc_info
+from traceback import format_exception
+from os import environ, makedirs
+from os.path import join, exists
+from contextlib import contextmanager
+from functools import wraps
+from datetime import datetime
 import arcpy
+import logging
+
+
+@static_vars(logger=None)
+def get_logger():
+
+    if not get_logger.logger:
+        get_logger.logger = logging.getLogger("gridgarage")
+
+    return get_logger.logger
+
+
+def debug(message):
+
+    message = make_tuple(message)
+
+    try:
+        logger = get_logger()
+        debug_func = logger.debug
+    except:
+        debug_func = print
+        message = ["DEBUG: " + str(msg) for msg in message]
+
+    for msg in message:
+        debug_func(msg)
+
+    return
+
+
+def info(message):
+
+    message = make_tuple(message)
+
+    try:
+        logger = get_logger()
+        info_func = logger.info
+    except:
+        info_func = print
+        message = ["INFO: " + str(msg) for msg in message]
+
+    for msg in message:
+        info_func(msg)
+
+    return
+
+
+def warn(message):
+
+    message = make_tuple(message)
+
+    try:
+        logger = get_logger()
+        warn_func = logger.warn
+    except:
+        warn_func = print
+        message = ["WARN: " + str(msg) for msg in message]
+
+    for msg in message:
+        warn_func(msg)
+
+    return
+
+
+def error(message):
+
+    message = make_tuple(message)
+
+    try:
+        logger = get_logger()
+        error_func = logger.error
+    except:
+        error_func = print
+        message = ["ERROR: " + str(msg) for msg in message]
+
+    for msg in message:
+        error_func(msg)
+
+    return
+
+
+
+# LOG_FILE = join(APPDATA_PATH, "gridgarage.log")
+@contextmanager
+def error_trap(context):
+
+    """ A context manager that traps and logs exception in its block.
+        Usage:
+        with error_trapping('optional description'):
+            might_raise_exception()
+        this_will_always_be_called()
+    """
+    # try:
+    idx = context.__name__
+    # except AttributeError:
+    #     idx = inspect.getframeinfo(inspect.currentframe())[2]
+
+    # in_msg = "IN context= " + idx
+    # out_msg = "OUT context= " + idx
+
+    try:
+
+        debug("IN context= " + idx)
+
+        yield
+
+        debug("OUT context= " + idx)
+
+    except Exception as e:
+
+        error(repr(format_exception(exc_info())))
+
+        raise e
+
+    return
+
+
+def log_error(f):
+    """ A decorator to trap and log exceptions """
+
+    @wraps(f)
+    def log_wrap(*args, **kwargs):
+
+        with error_trap(f):
+
+            return f(*args, **kwargs)
+
+    return log_wrap
+
+
+class ArcStreamHandler(logging.StreamHandler):
+    """ Logging handler to log messages to ArcGIS """
+
+    def __init__(self, messages):
+
+        logging.StreamHandler.__init__(self)
+
+        self.messages = messages
+
+    def emit(self, record):
+        """ Emit the record to the ArcGIS messages object
+
+        Args:
+            record (): The message record
+
+        Returns:
+
+        """
+
+        msg = self.format(record)
+        msg = msg.replace("\n", ", ").replace("\t", " ").replace("  ", " ")
+        lvl = record.levelno
+
+        if lvl in [logging.ERROR, logging.CRITICAL]:
+            self.messages.addErrorMessage(msg)
+
+        elif lvl == logging.WARNING:
+            self.messages.addWarningMessage(msg)
+
+        else:
+            self.messages.addMessage(msg)
+
+        self.flush()
+
+        return
 
 
 class BaseTool(object):
 
-    @log_error
     def __init__(self, settings):
+        print("BaseTool.__init__")
 
-        self.debug = log.debug
-        self.info = log.info
-        self.warn = log.warn
+        self.appdata_path = join(environ["USERPROFILE"], "AppData", "Local", "GridGarage")
+        self.tool_name = type(self).__name__
+        self.time_stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.run_id = "{0}_{1}".format(self.tool_name, self.time_stamp)
+
+        self.log_file = join(self.appdata_path, self.tool_name + ".log")
+        self.logger = None
+        self.debug = debug
+        self.info = info
+        self.warn = warn
+        self.error = error
+
         self.label = settings.get("label", "label not set")
         self.description = settings.get("description", "description not set")
         self.canRunInBackground = settings.get("can_run_background", False)
         self.category = settings.get("category", False)
         self.parameters = None
-        self.run_id = "{0}_{1}".format(type(self).__name__, utils.time_stamp())
         self.execution_list = []
+
+        return
+
+    def configure_logging(self, messages):
+        print("BaseTool.configure_logging")
+
+        if not exists(self.log_file):
+
+            if not exists(self.appdata_path):
+                self.info("Creating app data path {}".format(self.appdata_path))
+                makedirs(self.appdata_path)
+
+            self.info("Creating log file {}".format(self.log_file))
+            open(self.log_file, 'a').close()
+
+        logger = get_logger()
+        self.debug = logger.debug
+        self.info = logger.info
+        self.warn = logger.warn
+        self.error = logger.error
+
+        logger.handlers = []  # be rid of ones from other tools
+
+        logger.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d %(levelname)s %(module)s %(funcName)s %(lineno)s %(message)s", datefmt="%Y%m%d %H%M%S")
+
+        file_handler = logging.FileHandler(self.log_file)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        logger.debug("FileHandler added")
+
+        ah = ArcStreamHandler(messages)
+        ah.setLevel(logging.INFO)
+        logger.addHandler(ah)
+        logger.debug("ArcLogHandler added")
+
+        logger.info("Debugging log file is located at '{}'".format(self.log_file))
 
         return
 
@@ -91,7 +308,7 @@ class BaseTool(object):
                 ws = out_ws_par.value
                 fmt = ras_fmt_par.value
 
-                if utils.is_local_gdb(ws) and fmt != "Esri Grid":
+                if is_local_gdb(ws) and fmt != "Esri Grid":
                     ras_fmt_par.setErrorMessage("Invalid raster format for workspace type")
 
         return
@@ -163,12 +380,10 @@ class BaseTool(object):
     @log_error
     def execute(self, parameters, messages):
 
-        log.configure_logging(messages)
-
         if not self.execution_list:
             raise ValueError("Tool execution list is empty")
 
-        self.info("Debugging log file is located at '{}'".format(log.LOG_FILE))
+        self.configure_logging(messages)
 
         self.parameters = parameters
 
@@ -181,14 +396,16 @@ class BaseTool(object):
             init = self.result.initialise(self.get_parameter("result_table"),
                                           self.get_parameter("fail_table"),
                                           self.get_parameter("output_workspace").value,
-                                          self.get_parameter("result_table_name").value)
+                                          self.get_parameter("result_table_name").value,
+                                          self.logger)
             self.info(init)
         except AttributeError:
             pass
 
-        with log.error_trap(self):
-            for f in self.execution_list:
-                f()
+        # with error_trap(self):
+        for f in self.execution_list:
+            f = log_error(f)
+            f()
 
         try:
             self.result.write()
@@ -319,7 +536,7 @@ class BaseTool(object):
         rows = param.valueAsText.split(";") if multi_val else [param.valueAsText]
 
         for row in rows:  # add proc_hist field
-            utils.make_tuple(row).append("")
+            make_tuple(row).append("")
 
         self.debug("Processing rows will be {}".format(rows))
 
@@ -339,9 +556,9 @@ class BaseTool(object):
             raise ValueError("No values or records to process.")
 
         fname = func.__name__
-        log_error(func)
+        func = log_error(func)
 
-        rows = [{k: v for k, v in zip(key_names, utils.make_tuple(row))} for row in rows]
+        rows = [{k: v for k, v in zip(key_names, make_tuple(row))} for row in rows]
         self.info("{} items to process".format(len(rows)))
 
         for row in rows:
@@ -355,15 +572,18 @@ class BaseTool(object):
                 res = func(row)
                 if return_to_results:
                     try:
-                        self.info(self.result.add(res))
+                        add = log_error(self.result.add)
+                        self.info(add(res))
                     except AttributeError:
                         raise ValueError("No result attribute for result record")
 
             except Exception as e:
 
-                log.error("error executing {}: {}".format(fname, str(e)))
+                self.error("error executing {}: {}".format(fname, str(e)))
+
                 try:
-                    self.result.fail(row)
+                    fail = log_error(self.result.fail)
+                    fail(row)
                 except AttributeError:
                     pass
 

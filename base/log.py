@@ -1,11 +1,16 @@
+from __future__ import print_function
 import contextlib
 import functools
 import os
 import inspect
 import logging
+from utils import static_vars
+from traceback import format_exception
+from sys import exc_info
 
 
 APPDATA_PATH = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "GridGarage")
+
 LOG_FILE = os.path.join(APPDATA_PATH, "gridgarage.log")
 
 
@@ -14,48 +19,81 @@ def make_tuple(ob):
     return ob if isinstance(ob, (list, tuple)) else [ob]
 
 
+@static_vars(logger=None)
+def get_logger():
+
+    if not get_logger.logger:
+        get_logger.logger = logging.getLogger("gridgarage")
+
+    return get_logger.logger
+
+
 def debug(message):
 
     message = make_tuple(message)
 
+    try:
+        logger = get_logger()
+        debug_func = logger.debug
+    except:
+        debug_func = print
+        message = ["DEBUG: " + str(msg) for msg in message]
+
     for msg in message:
-        try:
-            logging.getLogger("gridgarage").debug(msg)
-        except:
-            print "DEBUG: " + str(msg)
+        debug_func(msg)
+
+    return
 
 
 def info(message):
 
     message = make_tuple(message)
 
+    try:
+        logger = get_logger()
+        info_func = logger.info
+    except:
+        info_func = print
+        message = ["INFO: " + str(msg) for msg in message]
+
     for msg in message:
-        try:
-            logging.getLogger("gridgarage").info(msg)
-        except:
-            print "INFO: " + str(msg)
+        info_func(msg)
+
+    return
 
 
 def warn(message):
 
     message = make_tuple(message)
 
+    try:
+        logger = get_logger()
+        warn_func = logger.warn
+    except:
+        warn_func = print
+        message = ["WARN: " + str(msg) for msg in message]
+
     for msg in message:
-        try:
-            logging.getLogger("gridgarage").warn(msg)
-        except:
-            print "WARN: " + str(msg)
+        warn_func(msg)
+
+    return
 
 
 def error(message):
 
     message = make_tuple(message)
 
+    try:
+        logger = get_logger()
+        error_func = logger.error
+    except:
+        error_func = print
+        message = ["ERROR: " + str(msg) for msg in message]
+
     for msg in message:
-        try:
-            logging.getLogger("gridgarage").error(msg)
-        except:
-            print "ERROR: " + str(msg)
+        error_func(msg)
+
+    return
 
 
 class ArcStreamHandler(logging.StreamHandler):
@@ -82,7 +120,7 @@ class ArcStreamHandler(logging.StreamHandler):
         lvl = record.levelno
 
         if lvl in [logging.ERROR, logging.CRITICAL]:
-            self.messages.addWarningMessage(msg)
+            self.messages.addErrorMessage(msg)
 
         elif lvl == logging.WARNING:
             self.messages.addWarningMessage(msg)
@@ -90,24 +128,25 @@ class ArcStreamHandler(logging.StreamHandler):
         else:
             self.messages.addMessage(msg)
 
+        self.flush()
+
         return
 
 
-def configure_logging(arc_messages):
+def configure_logging(messages):
 
     if not os.path.exists(LOG_FILE):
 
         if not os.path.exists(APPDATA_PATH):
-            arc_messages.AddMessage("Creating app data path {}".format(APPDATA_PATH))
+            messages.addMessage("Creating app data path {}".format(APPDATA_PATH))
             os.makedirs(APPDATA_PATH)
 
-        arc_messages.AddMessage("Creating log file {}".format(LOG_FILE))
+        messages.addMessage("Creating log file {}".format(LOG_FILE))
         open(LOG_FILE, 'a').close()
 
-    logger = logging.getLogger('gridgarage')
+    logger = get_logger()
 
-    if len(logger.handlers):  # then this has already been done for this logger instance
-        return
+    logger.handlers = []  # be rid of ones from other tools
 
     logger.setLevel(logging.DEBUG)
 
@@ -119,7 +158,7 @@ def configure_logging(arc_messages):
     logger.addHandler(file_handler)
     logger.debug("FileHandler added")
 
-    ah = ArcStreamHandler(arc_messages)
+    ah = ArcStreamHandler(messages)
     ah.setLevel(logging.INFO)
     logger.addHandler(ah)
     logger.debug("ArcLogHandler added")
@@ -129,46 +168,3 @@ def configure_logging(arc_messages):
     return
 
 
-@contextlib.contextmanager
-def error_trap(context):
-
-    """ A context manager that traps and logs exception in its block.
-        Usage:
-        with error_trapping('optional description'):
-            might_raise_exception()
-        this_will_always_be_called()
-    """
-
-    idx = getattr(context, "__name__", None)
-    if not idx:
-        idx = getattr(context, "name", None)
-    if not idx:
-        idx = inspect.getframeinfo(inspect.currentframe())[2]
-
-    _in = "IN context= " + idx
-    _out = "OUT context= " + idx
-
-    try:
-        debug(_in)
-        yield
-        debug(_out)
-    except Exception as e:
-        error(str(e))
-        raise e
-
-    return
-
-
-def log_error(f):
-    """ A decorator to trap and log exceptions """
-
-    @functools.wraps(f)
-    def log_wrap(*args, **kwargs):
-
-        debug(str(dir(f)))
-
-        with error_trap(f):
-
-            return f(*args, **kwargs)
-
-    return log_wrap

@@ -57,6 +57,15 @@ class UnmatchedSrsError(ValueError):
         super(UnmatchedSrsError, self).__init__(self, "Spatial references do not match '{}' != '{}'".format(srs1, srs2))
 
 
+def static_vars(**kwargs):
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
+
+    return decorate
+
+
 # @base.log.log
 # def get_field_list(dataset, wild_card=None, field_type=None):
 #
