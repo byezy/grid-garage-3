@@ -49,12 +49,12 @@ class LookupByTableRasterTool(BaseTool):
                 out.save(ras_out)
                 self.info("Saved to {0}".format(ras_out))
 
-                self.result.add({"geodata": ras_out, "source_geodata": ras})
+                self.result.add_pass({"geodata": ras_out, "source_geodata": ras})
             except:
                 self.warn("Failed on field '{}'".format(f))
                 data["geodata"] = ras
                 data["failure_field"] = f
-                self.result.fail(data)
+                self.result.add_fail(data)
 
         return
 

@@ -1,11 +1,10 @@
-from base.utils import make_tuple, table_conversion
-from arcpy import Describe
+from base.utils import make_tuple
+from arcpy import Describe, TableToTable_conversion, FieldMappings
 from shutil import copyfile
 from sys import exc_info
 from traceback import format_exception
 import os
 import csv
-import traceback
 
 
 def result(cls):
@@ -14,7 +13,7 @@ def result(cls):
 
 
 class ResultsUtils(object):
-    # @base.log.log_error
+
     def __init__(self):
         """ Add class members """
 
@@ -24,11 +23,11 @@ class ResultsUtils(object):
         self.fail_table_output_parameter = None
         self.fail_csv = ""
 
-        self.result_table = ""
-        self.result_table_name = ""
-        self.result_count = 0
-        self.result_table_output_parameter = None
-        self.result_csv = ""
+        self.pass_table = ""
+        self.pass_table_name = ""
+        self.pass_count = 0
+        self.pass_table_output_parameter = None
+        self.pass_csv = ""
 
         self.output_workspace = ""
         self.output_workspace_type = ""
@@ -48,13 +47,14 @@ class ResultsUtils(object):
             result_table_name (): Base name of result table
             logger (): 
 
-        Returns: A list of strings reflection operations
+        Returns:
 
         """
 
         self.logger = logger
+        logger.info("Initialising result files...")
 
-        self.result_table_output_parameter = result_table_param
+        self.pass_table_output_parameter = result_table_param
         self.fail_table_output_parameter = fail_table_param
 
         self.output_workspace = out_workspace.value
@@ -63,24 +63,25 @@ class ResultsUtils(object):
         self.output_workspace_parent = os.path.split(self.output_workspace)[0]
 
         if self.output_workspace_type == "RemoteDatabase":
-            e = ValueError("Remote database workspaces are not yet supported")
-            raise e
+
+            raise ValueError("Remote database workspaces are not yet supported")
 
         # if output is to a fgdb, put the csv into it's parent folder
         csv_ws = self.output_workspace_parent if self.output_workspace_type == "LocalDatabase" else self.output_workspace
 
         tn = result_table_name
         if tn:
-            self.result_table_name = tn
+            self.pass_table_name = tn
+            self.pass_table = os.path.join(self.output_workspace, self.pass_table_name)
+            self.pass_csv = os.path.join(csv_ws, tn + ".csv")
+
             self.fail_table_name = tn + "_FAIL"
-            self.result_table = os.path.join(self.output_workspace, tn)
-            self.fail_table = self.result_table + "_FAIL"
-            self.result_csv = os.path.join(csv_ws, tn + ".csv")
+            self.fail_table = os.path.join(self.output_workspace, self.fail_table_name)
             self.fail_csv = os.path.join(csv_ws, tn + "_FAIL.csv")
 
         try:
-            os.remove(self.result_csv)
-            logger.info("Existing results csv at {} removed".format(self.result_csv))
+            os.remove(self.pass_csv)
+            logger.info("Existing results csv at {} removed".format(self.pass_csv))
         except:
             pass
         try:
@@ -90,14 +91,16 @@ class ResultsUtils(object):
             pass
 
         tmp_str = "Temporary " if self.output_workspace_type == "LocalDatabase" else ""
-        pass_msg = ("{}Result CSV initialised: {}".format(tmp_str, self.result_csv))
+        pass_msg = ("{}Result CSV initialised: {}".format(tmp_str, self.pass_csv))
         fail_msg = ("{}Failure CSV initialised: {}".format(tmp_str, self.fail_csv))
+
+        logger.debug(locals())
         logger.info(pass_msg)
         logger.info(fail_msg)
 
         return
 
-    def add(self, results):
+    def add_pass(self, results):
         """ Write result record to CSV
 
         Writes a result to the temp CSV immediately, trade off between
@@ -111,42 +114,43 @@ class ResultsUtils(object):
         """
 
         if not results:  # in case a caller passes in None or []
-            return "Result was empty"
+            self.logger.warn("Result was empty")
 
-        if not self.result_csv:
-            raise ValueError("Result CSV is not set")
+        if not self.pass_csv:
+            raise ValueError("Result CSV '{}' is not set".format(self.pass_csv))
 
         results = make_tuple(results)
 
         # here we will just store the keys from the first result, re-using these will force an error for any inconsistency
-        if not os.path.isfile(self.result_csv):
+        if not os.path.isfile(self.pass_csv):
             result_fieldnames = results[0].keys()
             result_fieldnames.append("proc_hist")
             setattr(self, "result_fieldnames", result_fieldnames)
-            with open(self.result_csv, "wb") as csv_file:
+            with open(self.pass_csv, "wb") as csv_file:
                 writer = csv.DictWriter(csv_file, delimiter=',', lineterminator='\n', fieldnames=self.result_fieldnames)
                 writer.writeheader()  # write the header on first call
+            self.logger.info("Header written to '{}".format(self.pass_csv))
 
         def get_geodata_source_history(dict):
             geodata = dict.get("geodata", "geodata not set for result")
             source_geodata = dict.get("source_geodata", "source not set for result")
             proc_hist = getattr(self, "new_proc_hist", "proc_hist not set for result")
-            return "{} << {} << {}".format(geodata, proc_hist, source_geodata)
+            return "Deprecating"  # "{} << {} << {}".format(geodata, proc_hist, source_geodata)
 
         # write the data
-        with open(self.result_csv, "ab") as csv_file:
+        with open(self.pass_csv, "ab") as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=self.result_fieldnames)
             for r in results:  # add proc_hist data
-                r["proc_hist"] = get_geodata_source_history(r)
+                r["proc_hist"] = "deprecating"  # get_geodata_source_history(r)
 
             writer.writerows(results)
-            self.result_count += len(results)
+            self.pass_count += len(results)
 
-        results = "Result written: {}".format(results)
+        self.logger.info("Result written: {}".format(results))
 
-        return results
+        return
 
-    def fail(self, row, info):
+    def add_fail(self, row):
         """ Write failure record to CSV
 
         Writes a failure to the temp CSV immediately, trade off between
@@ -160,8 +164,11 @@ class ResultsUtils(object):
 
         """
 
+        if not row:  # in case a caller passes in None or []
+            self.logger.warn("Fail row was empty")
+
         if not self.fail_csv:
-            raise ValueError("Fail CSV is not set")
+            raise ValueError("Fail CSV '{}' is not set".format(self.fail_csv))
 
         # write the header on first call
         if not os.path.isfile(self.fail_csv):
@@ -173,7 +180,7 @@ class ResultsUtils(object):
         # tb = exc_info()[2]
         # tbinfo = traceback.format_tb(tb)[0]
         # Concatenate information together concerning the error into a message string
-        msg = repr(format_exception(exc_info()))
+        msg = repr(format_exception(*exc_info()))
         # tbinfo + str(exc_info()[1])
         msg = msg.strip().replace('\n', ', ').replace('\r', ' ').replace('  ', ' ')
 
@@ -189,7 +196,7 @@ class ResultsUtils(object):
                     geodata = "geodata not set for row"
         source_geodata = row.get("source_geodata", "source not set for row")
         proc_hist = getattr(self, "new_proc_hist", "proc_hist not set for row")
-        row["proc_hist"] = "{} << {} << {}".format(geodata, proc_hist, source_geodata)
+        row["proc_hist"] = "Deprecating"  #   "{} << {} << {}".format(geodata, proc_hist, source_geodata)
 
         # write the failure record
         with open(self.fail_csv, "ab") as csv_file:
@@ -197,73 +204,111 @@ class ResultsUtils(object):
             writer.writerow({"geodata": geodata, "failure": msg, "row_data": str(row)})
             self.fail_count += 1
 
+        self.logger.info("Fail written: {}".format(msg))
+
         return
 
     def write(self):
-        """ Write the success and failure csv files to the final tables
+        """ Write the success and failure csv files to the final tables """
 
-        Returns: A list of strings reflecting operation results
+        self._write_results()
+        self._write_failures()
 
-        """
-        ret = self._write_results() + self._write_failures()
-
-        return ret
+        return
 
     def _write_results(self):
-        """ Write the result CSV rows to the final table
+        """ Write the result CSV rows to the final table """
 
-        Returns: A list of strings reflecting operation status
+        if not os.path.exists(self.pass_csv):
+            self.logger.warn("No results")
 
-        """
-        msg = []
+            return
 
-        if not os.path.exists(self.result_csv):
-            msg.append("No results")
-        else:
-            if self.output_workspace_type == "LocalDatabase":  # it's an fgdb
-                try:
-                    self.result_table = table_conversion(self.result_csv, self.output_workspace, self.result_table_name)
-                    os.remove(self.result_csv)
-                except:
-                    self.result_table = os.path.join(self.output_workspace_parent, self.result_table_name + ".csv")
-                    copyfile(self.result_csv, self.result_table)
-                    os.remove(self.result_csv)
-                    err_msg = "Table to Table Conversion failed. Hoisted temporary result CSV to database parent directory...\n"
-            else:  # it's a directory
-                self.result_table = self.result_csv
+        if self.output_workspace_type == "LocalDatabase":  # it's an fgdb
+            try:
+                self.pass_table = table_conversion(self.pass_csv, self.output_workspace, self.pass_table_name)
+                os.remove(self.pass_csv)
+            except Exception as e:
+                self.logger.warn("Table conversion failed: {}".format(e))
+                self.pass_table = self.pass_csv
+                # self.pass_table = os.path.join(self.output_workspace_parent, self.pass_table_name + ".csv")
+                # copyfile(self.pass_csv, self.pass_table)
+                # os.remove(self.pass_csv)
+                self.logger.warn("Result as CSV here: '{}'".format(self.pass_csv))
+        else:  # it's a directory
+            self.pass_table = self.pass_csv
 
-            self.result_table_output_parameter.value = self.result_table
-            msg.append("Final results at {0}".format(self.result_table))
+        self.pass_table_output_parameter.value = self.pass_table
 
-        return msg
+        self.logger.debug(self.__dict__)
+        self.logger.info("Final results at {}".format(self.pass_table))
+
+        return
 
     def _write_failures(self):
-        """ Write the failure CSV rows to the final table
-
-        Returns: A list of strings reflecting operation status
-
-        """
-
-        err_msg = []
+        """ Write the failure CSV rows to the final table """
 
         if not os.path.exists(self.fail_csv) or not self.fail_count:
-            err_msg.append("No failures")
-        else:
-            if self.output_workspace_type != "FileSystem":  # it's a a fgdb or rmdb
-                try:
-                    self.fail_table = table_conversion(self.fail_csv, self.output_workspace, self.fail_table_name)
-                    os.remove(self.fail_csv)
-                except:
-                    self.fail_table = os.path.join(self.output_workspace_parent, self.fail_table_name + ".csv")
-                    copyfile(self.fail_csv, self.fail_table)
-                    os.remove(self.fail_csv)
-                    err_msg.append("Table to Table Conversion failed. Hoisted temporary failure CSV to database parent directory...")
-            else:
+            self.logger.info("No failures")
+
+            return
+
+        if self.output_workspace_type != "FileSystem":  # it's a a fgdb or rmdb
+            try:
+                self.fail_table = table_conversion(self.fail_csv, self.output_workspace, self.fail_table_name)
+                os.remove(self.fail_csv)
+            except Exception as e:
+                self.logger.warn("Table conversion failed: {}".format(e))
                 self.fail_table = self.fail_csv
+                # self.fail_table = os.path.join(self.output_workspace_parent, self.fail_table_name + ".csv")
+                # copyfile(self.fail_csv, self.fail_table)
+                # os.remove(self.fail_csv)
+                self.logger.warn("Failures as CSV here: '{}'".format(self.fail_csv))
+        else:
+            self.fail_table = self.fail_csv
 
-            self.fail_table_output_parameter.value = self.fail_table
-            err_msg.append("Failures at {0}".format(self.fail_table))
+        self.fail_table_output_parameter.value = self.fail_table
 
-        return err_msg
+        self.logger.debug(self.__dict__)
+        self.logger.info("Failures at {}".format(self.fail_table))
 
-# this message based status thing above is pretty dodgy needs to be reworked sensibly, just a messy job to refactor as now interwoven through most tools
+        return
+
+
+def table_conversion(in_rows, out_path, out_name):
+
+    """ Copy a file-based table to a local database, returns full path to new table if successful"""
+    fms = FieldMappings()
+    fms.addTable(in_rows)
+
+    # make a list of fields we will look at for size suitability
+    sus_fields, i = [], -1
+    for f in fms.fields:
+        i += 1
+        if f.type == "String":  # and f.length == 255:
+            sus_fields.append([f.name, i])  # need the index later on...
+
+    # now we will run through the rows and see if we have issues
+    failed = ""
+    try:
+        failed = "on opening file {0}".format(in_rows)
+        with open(in_rows) as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:  # each row is a dict of results
+                failed = "on using row {0}".format(row)
+                for f, j in sus_fields:
+                    ln = len(row[f])
+                    fm = fms.getFieldMap(j)
+                    fld = fm.outputField
+                    if ln > fld.length:
+                        fld.length = ln + 10
+                        fm.outputField = fld
+                        fms.replaceFieldMap(j, fm)
+
+    except Exception as e:
+        raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
+
+    TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
+
+    return os.path.join(out_path, out_name)
+

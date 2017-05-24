@@ -55,8 +55,8 @@ class RasteriseByTableTool(BaseTool):
                 r_out = utils.make_raster_name("{0}_{1}".format(splitext(feat_ds)[0], field), self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
                 self.info("Rasterising {0} on {1} -> {2}".format(feat_ds, field, r_out))
                 FeatureToRaster_conversion(feat_ds, field, r_out)
-                self.result.add({"geodata": r_out, "source_geodata": feat_ds, "source_field": field})
+                self.result.add_pass({"geodata": r_out, "source_geodata": feat_ds, "source_field": field})
             except Exception as e:
                 self.error("FAILED rasterising {0} on {1}: {2}".format(feat_ds, field, str(e)))
-                self.result.fail(data)
+                self.result.add_fail(data)
 

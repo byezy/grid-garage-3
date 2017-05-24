@@ -75,7 +75,6 @@ def static_vars(**kwargs):
 #     return ap.ListFields(dataset, wild_card, field_type)
 
 
-# @base.log.log_error
 def table_conversion(in_rows, out_path, out_name):
 
     """ Copy a file-based table to a local database, returns full path to new table if successful"""
@@ -107,18 +106,15 @@ def table_conversion(in_rows, out_path, out_name):
                         fms.replaceFieldMap(j, fm)
 
     except Exception as e:
-        # ap.AddWarning()
-        # raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
-        pass
+        raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
 
-    try:
+    # try:
         # TableToTable_conversion (in_rows, out_path, out_name, {where_clause}, {field_mapping}, {config_keyword})
-        ap.TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
-        ret = os.path.join(out_path, out_name)
+    ap.TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
+    ret = os.path.join(out_path, out_name)
 
-    except Exception as e:
-        # base.log.error(e)
-        ret = None
+    # except Exception as e:
+    #     ret = None
 
     return ret
 

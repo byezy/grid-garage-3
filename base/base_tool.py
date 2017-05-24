@@ -12,14 +12,18 @@ from os import environ, makedirs
 from os.path import join, exists
 from contextlib import contextmanager
 from functools import wraps
-from datetime import datetime
 import arcpy
 import logging
 
 
+def time_stamp(fmt='%Y%m%d_%H%M%S'):
+    from datetime import datetime
+
+    return datetime.now().strftime(fmt)
+
+
 @static_vars(logger=None)
 def get_logger():
-
     if not get_logger.logger:
         get_logger.logger = logging.getLogger("gridgarage")
 
@@ -27,7 +31,6 @@ def get_logger():
 
 
 def debug(message):
-
     message = make_tuple(message)
 
     try:
@@ -44,7 +47,6 @@ def debug(message):
 
 
 def info(message):
-
     message = make_tuple(message)
 
     try:
@@ -61,7 +63,6 @@ def info(message):
 
 
 def warn(message):
-
     message = make_tuple(message)
 
     try:
@@ -78,7 +79,6 @@ def warn(message):
 
 
 def error(message):
-
     message = make_tuple(message)
 
     try:
@@ -94,11 +94,9 @@ def error(message):
     return
 
 
-
 # LOG_FILE = join(APPDATA_PATH, "gridgarage.log")
 @contextmanager
 def error_trap(context):
-
     """ A context manager that traps and logs exception in its block.
         Usage:
         with error_trapping('optional description'):
@@ -123,7 +121,7 @@ def error_trap(context):
 
     except Exception as e:
 
-        error(repr(format_exception(exc_info())))
+        error(repr(format_exception(*exc_info())))
 
         raise e
 
@@ -135,9 +133,7 @@ def log_error(f):
 
     @wraps(f)
     def log_wrap(*args, **kwargs):
-
         with error_trap(f):
-
             return f(*args, **kwargs)
 
     return log_wrap
@@ -181,13 +177,12 @@ class ArcStreamHandler(logging.StreamHandler):
 
 
 class BaseTool(object):
-
     def __init__(self, settings):
         print("BaseTool.__init__")
 
         self.appdata_path = join(environ["USERPROFILE"], "AppData", "Local", "GridGarage")
         self.tool_name = type(self).__name__
-        self.time_stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.time_stamp = time_stamp()
         self.run_id = "{0}_{1}".format(self.tool_name, self.time_stamp)
 
         self.log_file = join(self.appdata_path, self.tool_name + ".log")
@@ -201,22 +196,16 @@ class BaseTool(object):
         self.description = settings.get("description", "description not set")
         self.canRunInBackground = settings.get("can_run_background", False)
         self.category = settings.get("category", False)
+
         self.parameters = None
+        self.messages = None
         self.execution_list = []
 
         return
 
-    def configure_logging(self, messages):
+    def configure_logging(self):
         print("BaseTool.configure_logging")
-
-        if not exists(self.log_file):
-
-            if not exists(self.appdata_path):
-                self.info("Creating app data path {}".format(self.appdata_path))
-                makedirs(self.appdata_path)
-
-            self.info("Creating log file {}".format(self.log_file))
-            open(self.log_file, 'a').close()
+        self.messages.addMessage("Initialising logging...")
 
         logger = get_logger()
         self.debug = logger.debug
@@ -225,21 +214,30 @@ class BaseTool(object):
         self.error = logger.error
 
         logger.handlers = []  # be rid of ones from other tools
-
         logger.setLevel(logging.DEBUG)
 
-        formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d %(levelname)s %(module)s %(funcName)s %(lineno)s %(message)s", datefmt="%Y%m%d %H%M%S")
+        ah = ArcStreamHandler(self.messages)
+        ah.setLevel(logging.INFO)
+        logger.addHandler(ah)
+        logger.info("ArcMap stream handler configured")
+
+        if not exists(self.log_file):
+
+            if not exists(self.appdata_path):
+                logger.info("Creating app data path {}".format(self.appdata_path))
+                makedirs(self.appdata_path)
+
+            logger.info("Creating log file {}".format(self.log_file))
+            open(self.log_file, 'a').close()
 
         file_handler = logging.FileHandler(self.log_file)
         file_handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d %(levelname)s %(module)s %(funcName)s %(lineno)s %(message)s", datefmt="%Y%m%d %H%M%S")
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-        logger.debug("FileHandler added")
+        logger.info("File stream handler configured")
 
-        ah = ArcStreamHandler(messages)
-        ah.setLevel(logging.INFO)
-        logger.addHandler(ah)
-        logger.debug("ArcLogHandler added")
+        self.logger = logger
 
         logger.info("Debugging log file is located at '{}'".format(self.log_file))
 
@@ -383,9 +381,10 @@ class BaseTool(object):
         if not self.execution_list:
             raise ValueError("Tool execution list is empty")
 
-        self.configure_logging(messages)
-
         self.parameters = parameters
+        self.messages = messages
+
+        self.configure_logging()
 
         for k, v in self.get_parameter_dict().iteritems():
             setattr(self, k, v)
@@ -393,16 +392,10 @@ class BaseTool(object):
         self.debug("Tool attributes set {}".format(self.__dict__))
 
         try:
-            init = self.result.initialise(self.get_parameter("result_table"),
-                                          self.get_parameter("fail_table"),
-                                          self.get_parameter("output_workspace").value,
-                                          self.get_parameter("result_table_name").value,
-                                          self.logger)
-            self.info(init)
+            self.result.initialise(self.get_parameter("result_table"), self.get_parameter("fail_table"), self.get_parameter("output_workspace").value, self.get_parameter("result_table_name").value, self.logger)
         except AttributeError:
             pass
 
-        # with error_trap(self):
         for f in self.execution_list:
             f = log_error(f)
             f()
@@ -559,21 +552,28 @@ class BaseTool(object):
         func = log_error(func)
 
         rows = [{k: v for k, v in zip(key_names, make_tuple(row))} for row in rows]
-        self.info("{} items to process".format(len(rows)))
+        total_rows = len(rows)
+        self.info("{} items to process".format(total_rows))
+        row_num = 0
+        try:
+            add = log_error(self.result.add_pass)
+        except AttributeError:
+            pass
 
         for row in rows:
             try:
                 try:
-                    self.result.new_proc_hist = "Tool='{}' Parameters={} Row={}".format(self.label, self.get_parameter_dict(), row)
+                    self.result.new_proc_hist = "To be deprecated"  # "Tool='{}' Parameters={} Row={}".format(self.label, self.get_parameter_dict(), row)
                 except AttributeError:
                     pass
 
-                self.debug("Running {} with data={}".format(fname, row))
+                row_num += 1
+                self.info("{} > Processing row {} of {}".format(time_stamp("%H:%M:%S%f")[:-3], row_num, total_rows))
+                self.debug("Running {} with row={}".format(fname, row))
                 res = func(row)
                 if return_to_results:
                     try:
-                        add = log_error(self.result.add)
-                        self.info(add(res))
+                        self.result.add_pass(res)
                     except AttributeError:
                         raise ValueError("No result attribute for result record")
 
@@ -582,7 +582,7 @@ class BaseTool(object):
                 self.error("error executing {}: {}".format(fname, str(e)))
 
                 try:
-                    fail = log_error(self.result.fail)
+                    fail = log_error(self.result.add_fail)
                     fail(row)
                 except AttributeError:
                     pass
