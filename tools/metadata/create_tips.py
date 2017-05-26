@@ -104,7 +104,7 @@ class CreateTipsTableMetadataTool(BaseTool):
             if idx:
                 try:
                     new_val = new_val.split(",")
-                    new_val = new_val[idx]
+                    new_val = new_val[idx].strip()
                 except IndexError:
                     self.warn("{} out of range {}: {}".format(idx+1, range(1, len(new_val)+1), new_val))
                     continue

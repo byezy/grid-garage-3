@@ -1,10 +1,12 @@
 from base.base_tool import BaseTool
 from base.results import result
-from base import utils
+from base.utils import validate_geodata, split_up_filename, join_up_filename
 from base.method_decorators import input_tableview, input_output_table, parameter
 import arcpy
 from os.path import join, exists
-import arcpy_metadata as md
+# import arcpy_metadata as md
+from hermes import Paperwork
+
 
 tool_settings = {"label": "Export XML",
                  "description": "Exports XML...",
@@ -27,7 +29,7 @@ class ExportXmlMetadataTool(BaseTool):
 
     @input_tableview("geodata_table", "Table of Geodata", False, ["geodata:geodata:"])
     @parameter("xml_folder", "XML Folder", "DEFolder", "Required", False, "Input", None, None, None, None)
-    @parameter("translator", "Translator", "DEFile", "Required", False, "Input", None, None, None, default_translator, None)
+    # @parameter("translator", "Translator", "DEFile", "Required", False, "Input", None, None, None, default_translator, None)
     @parameter("stylesheet", "Style Sheet", "DEFile", "Required", False, "Input", None, None, None, default_stylesheet, None)
     @input_output_table
     def getParameterInfo(self):
@@ -36,8 +38,8 @@ class ExportXmlMetadataTool(BaseTool):
 
     def iterate(self):
 
-        if not exists(self.translator):
-            raise ValueError("Translator '{}' does not exist".format(self.translator))
+        # if not exists(self.translator):
+        #     raise ValueError("Translator '{}' does not exist".format(self.translator))
 
         if not exists(self.stylesheet):
             raise ValueError("Stylesheet '{}' does not exist".format(self.stylesheet))
@@ -50,27 +52,49 @@ class ExportXmlMetadataTool(BaseTool):
 
         geodata = data["geodata"]
 
-        self.info("Creating XML/HTML files for {}".format(geodata))
+        validate_geodata(geodata, message_func=self.info)
 
-        fpath, fname, fbase, fext = utils.split_up_filename(geodata)
+        self.info("Exporting XML/HTML files for {}".format(geodata))
 
-        xml_file = utils.join_up_filename(self.xml_folder, fname, ".xml")
+        fpath, fname, fbase, fext = split_up_filename(geodata)
 
-        # metadata = md.MetadataEditor(geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
-        # self.info(metadata.__dict__)
-        # metadata.finish()
-        try:
-            arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
-            self.info("XML file '{}' created".format(xml_file))
-        except Exception as e:
-            xml_file = "Error creating '{}': {}".format(xml_file, e)
+        xml_file = join_up_filename(self.xml_folder, fname, ".xml")
+        html_file = join_up_filename(self.xml_folder, fbase, ".html")
 
-        html_file = utils.join_up_filename(self.xml_folder, fbase, ".html")
+        pw = Paperwork(dataset=geodata)
+
+        # meta = pw.convert()
+        xml_file = join_up_filename(self.xml_folder, fbase, ".html")
+        pw.exportToXML(self.xml_folder, fbase)
+
+        #
+        # workspace_type = arcpy.Describe(desc.path).workspaceType
+        #
+        # if workspace_type == "FileSystem":
+        #     gd_path,  gd_base, gd_name, gd_ext = split_up_filename(geodata)
+        #
+        #     xml_file = join(gd_path, gd_base + ".xml")
+        #     if exists(xml_file):
+        #         with open(xml_file, "r") as xmlfile:
+        #             xml = "".join(line.rstrip() for line in xmlfile)
+        #     else:
+        #         xml_file = None
+        # # metadata = md.MetadataEditor(geodata)  # currently supports Shapefiles, FeatureClasses, RasterDatasets and Layers
+        # # self.info(metadata.__dict__)
+        # # metadata.finish()
+        # try:
+        #     arcpy.ExportMetadata_conversion(geodata, self.translator, xml_file)
+        #     self.info("XML file '{}' created".format(xml_file))
+        # except Exception as e:
+        #     xml_file = "Error creating '{}': {}".format(xml_file, e)
+        #
+        # html_file = join_up_filename(self.xml_folder, fbase, ".html")
+        #
 
         try:
             arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "")
             self.info("HTML file '{}' created".format(html_file))
-        except:
+        except Exception as e:
             html_file = "Error creating '{}': {}".format(html_file, e)
 
         return {"geodata": geodata, "xml_file": xml_file, "html_file": html_file}
