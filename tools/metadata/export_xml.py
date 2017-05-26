@@ -61,11 +61,40 @@ class ExportXmlMetadataTool(BaseTool):
         xml_file = join_up_filename(self.xml_folder, fname, ".xml")
         html_file = join_up_filename(self.xml_folder, fbase, ".html")
 
-        pw = Paperwork(dataset=geodata)
+        self.info("Attempting metadata upgrade")
+        try:
+            arcpy.UpgradeMetadata_conversion(geodata, "ESRIISO_TO_ARCGIS")
+        except Exception as e:
+            self.warn("Upgrade ESRIISO_TO_ARCGIS failed: {}".format(e))
+            try:
+                arcpy.UpgradeMetadata_conversion(geodata, "FGDC_TO_ARCGIS")
+            except Exception as e:
+                self.warn("Upgrade FGDC_TO_ARCGIS failed: {}".format(e))
 
-        # meta = pw.convert()
-        xml_file = join_up_filename(self.xml_folder, fbase, ".html")
-        pw.exportToXML(self.xml_folder, fbase)
+        self.info("Creating metadata xml")
+        try:
+            pw = Paperwork(dataset=geodata)
+            md = pw.convert()
+            pw.save(d=md)
+            pw.exportToXML(self.xml_folder, fbase)
+            self.info("XML file '{}' created".format(xml_file))
+        except Exception as e:
+            xml_file = "Error creating '{}': {}".format(xml_file, e)
+            self.warn(xml_file)
+
+        self.info("Creating metadata html")
+        try:
+            arcpy.XSLTransform_conversion(xml_file, self.stylesheet, html_file, "#")
+            self.info("HTML file '{}' created".format(html_file))
+        except:
+            try:
+                arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "#")
+                self.info("HTML file '{}' created".format(html_file))
+            except Exception as e:
+                html_file = "Error creating '{}': {}".format(html_file, e)
+                self.warn(html_file)
+
+        return {"geodata": geodata, "xml_file": xml_file, "html_file": html_file}
 
         #
         # workspace_type = arcpy.Describe(desc.path).workspaceType
@@ -90,14 +119,6 @@ class ExportXmlMetadataTool(BaseTool):
         #
         # html_file = join_up_filename(self.xml_folder, fbase, ".html")
         #
-
-        try:
-            arcpy.XSLTransform_conversion(geodata, self.stylesheet, html_file, "")
-            self.info("HTML file '{}' created".format(html_file))
-        except Exception as e:
-            html_file = "Error creating '{}': {}".format(html_file, e)
-
-        return {"geodata": geodata, "xml_file": xml_file, "html_file": html_file}
 
 
 # import arcpy
