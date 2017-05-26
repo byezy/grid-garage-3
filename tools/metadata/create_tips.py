@@ -43,7 +43,7 @@ class CreateTipsTableMetadataTool(BaseTool):
         base_tips = [line for line in self.base_tips if line]
         k = [x.strip() for x in base_tips[0].split(",")]
         v = [x.strip() for x in base_tips[1].split(",")]
-        base_tips = {k1: v1 for k1, v1 in zip(k, v) if k1 in self.include_fields}
+        base_tips = [(k1, v1) for k1, v1 in zip(k, v) if k1 in self.include_fields]
         self.base_tips = OrderedDict(base_tips)
         self.tip_order = ",".join(self.base_tips.iterkeys())
 
@@ -52,7 +52,7 @@ class CreateTipsTableMetadataTool(BaseTool):
         def startsnends(string, code):
             return string.startswith(code) and string.endswith(code)
 
-        self.extractions = {k: v for k, v in self.base_tips.iteritems() if startsnends(v, "$")}
+        self.extractions = {k: v for k, v in self.base_tips.iteritems() if startsnends(v.strip().strip('"'), "$")}
         self.info("Field values extraction from describe will: {}".format(self.extractions))
 
         return
@@ -81,31 +81,37 @@ class CreateTipsTableMetadataTool(BaseTool):
         r.update(new_tips)
 
         fld_tips = {}
-        for k, v in self.extractions.iteritems():   # $table_fields,2#.html$
-            v = v.strip().strip("$")                # table_fields,2#.html
+        for k, v in self.extractions.iteritems():   # "$table_fields,2#.html$"
+            v = v.strip().strip('"').strip("$")     # table_fields,2#.html
             v = v.split("#")                        # ['table_fields,2', .html]
             text = v[1] if len(v) > 1 else ""       # .html
-            v = v[0].split(",")                     # [table_fields, 2]
+
+            v = v[0].split(":")                     # [table_fields, 2]
             field = v[0]                            # table_fields
-            idx = v[1] if len(v) > 1 else None      # 2
+            try:
+                idx = int(v[1])-1 if len(v) > 1 else None      # 2
+            except:
+                self.warn("Bad format '{}', use list:index (1-based)".format(v))
+                continue
+
             desc = describe(geodata)
             try:
                 new_val = desc[field]
-            except AttributeError:
-                self.warn("'{}' not in {}".format(field, desc.keys()))
+            except [KeyError, AttributeError]:
+                self.warn(": '{}' not in {}".format(field, desc.keys()))
                 continue
+
             if idx:
                 try:
                     new_val = new_val.split(",")
                     new_val = new_val[idx]
                 except IndexError:
-                    self.warn("'{}' out of range ({})".format(idx, len(new_val)))
+                    self.warn("{} out of range {}: {}".format(idx+1, range(1, len(new_val)+1), new_val))
                     continue
 
-            self.info(["parse: ", k, new_val, text])
             fld_tips[k] = "{}{}".format(new_val, text)
 
-        self.info(fld_tips)
+        self.info("Extracted field values: {}".format(fld_tips))
 
         r.update(fld_tips)
 
