@@ -87,6 +87,7 @@ def table_conversion(in_rows, out_path, out_name):
         i += 1
         if f.type == "String":  # and f.length == 255:
             sus_fields.append([f.name, i])  # need the index later on...
+            
 
     # now we will run through the rows and see if we have issues
     failed = ""
