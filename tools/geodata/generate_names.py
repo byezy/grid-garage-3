@@ -48,6 +48,8 @@ class GenerateNamesGeodataTool(BaseTool):
 
     def initialise(self):
 
+        self.replacements = None if self.replacements == "#" else self.replacements
+
         # look for an early exit as all parameters are optional
         if not (self.replacements or self.output_filename_prefix or self.output_filename_suffix):
             self.warn('All optional parameters are empty. Nothing to do.')

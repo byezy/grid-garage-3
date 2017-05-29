@@ -75,7 +75,7 @@ class ExportXmlMetadataTool(BaseTool):
         try:
             pw = Paperwork(dataset=geodata)
             md = pw.convert()
-            pw.save(d=md)
+            # pw.save(d=md)
             pw.exportToXML(self.xml_folder, fbase)
             self.info("XML file '{}' created".format(xml_file))
         except Exception as e:
