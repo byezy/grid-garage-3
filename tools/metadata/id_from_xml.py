@@ -6,7 +6,7 @@ import xml.etree.cElementTree as et
 
 tool_settings = {"label": "Get IAR ID From XML",
                  "description": "Retrieves Internal Asset Register ID from XML",
-                 "can_run_background": "True",
+                 "can_run_background": "False",
                  "category": "Metadata"}
 
 

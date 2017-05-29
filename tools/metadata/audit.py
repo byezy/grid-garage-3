@@ -10,7 +10,7 @@ from datetime import datetime
 
 tool_settings = {"label": "Audit",
                  "description": "Audit datasets for identifiable metadata",
-                 "can_run_background": "True",
+                 "can_run_background": "False",
                  "category": "Metadata"}
 
 

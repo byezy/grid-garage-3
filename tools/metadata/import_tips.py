@@ -8,7 +8,7 @@ import os
 
 tool_settings = {"label": "Import Tip Files to Table",
                  "description": "Create a table of tips from existing tip files",
-                 "can_run_background": "True",
+                 "can_run_background": "False",
                  "category": "Metadata"}
 
 

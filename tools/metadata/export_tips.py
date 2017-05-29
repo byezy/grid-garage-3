@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 tool_settings = {"label": "Export tips",
                  "description": "Exports tips...",
-                 "can_run_background": "True",
+                 "can_run_background": "False",
                  "category": "Metadata"}
 
 

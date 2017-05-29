@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 tool_settings = {"label": "Create Tips Table",
                  "description": "Create a table of tips from a tip file template",
-                 "can_run_background": "True",
+                 "can_run_background": "False",
                  "category": "Metadata"}
 
 

@@ -10,7 +10,7 @@ from hermes import Paperwork
 
 tool_settings = {"label": "Export XML",
                  "description": "Exports XML...",
-                 "can_run_background": "True",
+                 "can_run_background": "False",
                  "category": "Metadata"}
 
 
