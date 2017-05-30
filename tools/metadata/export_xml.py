@@ -4,18 +4,17 @@ from base.utils import validate_geodata, split_up_filename, join_up_filename
 from base.method_decorators import input_tableview, input_output_table, parameter
 import arcpy
 from os.path import join, exists
-# import arcpy_metadata as md
 from hermes import Paperwork
 
 
-tool_settings = {"label": "Export XML",
-                 "description": "Exports XML...",
+tool_settings = {"label": "Export Metadata",
+                 "description": "Exports data source metadata to xml/html",
                  "can_run_background": "False",
                  "category": "Metadata"}
 
 
 install_dir = arcpy.GetInstallInfo("desktop")["InstallDir"]
-default_translator = join(install_dir, "Metadata", "Translator", "ARCGIS2ISO19139.xml")  # ESRI_ISO2ISO19139.xml")
+# default_translator = join(install_dir, "Metadata", "Translator", "ARCGIS2ISO19139.xml")  # ESRI_ISO2ISO19139.xml")
 default_stylesheet = join(install_dir, "Metadata", "Stylesheets", "ArcGIS.xsl")  # ESRI_ISO2ISO19139.xml")
 
 
