@@ -1,5 +1,5 @@
 from base.utils import make_tuple
-from arcpy import Describe, TableToTable_conversion, FieldMappings
+from arcpy import Describe, TableToTable_conversion, FieldMappings, FieldMap, Field
 # from shutil import copyfile
 from sys import exc_info
 from traceback import format_exception
@@ -268,9 +268,14 @@ class ResultsUtils(object):
         # it makes the fields size themselves properly!
         for i, f in enumerate(fms):
             fm = fms.getFieldMap(i)
-            fm.outputField.type = "String"
-            fm.outputField.length = 8000
+            # fm2 = FieldMap()
+            f = Field()
+            f.name = fm.outputField.name
+            f.type = "String"
+            f.length = 8000
+            fm.outputField = f
             fms.replaceFieldMap(i, fm)
+            # self.logger.info("{} type {} length is {}".format(fm.outputField.name, fm.outputField.type, fm.outputField.length))
 
         TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
 
