@@ -286,17 +286,13 @@ class ResultsUtils(object):
             reader = csv.DictReader(csv_file)
             rows = [row for row in reader]
 
-        self.logger.info("reader {}".format(rows))
-
         def get_max_string_length(field):
 
             return max([len(d[field.name]) for d in rows])
 
         sus_string_fields = [(f, i) for i, f in enumerate(fms.fields) if f.type == "String"]
-        self.logger.info("sus_string_fields {}".format(sus_string_fields))
 
         fix_string_fields = [(f, i, get_max_string_length(f)) for f, i in sus_string_fields]
-        self.logger.info("fix_string_fields {}".format(fix_string_fields))
         for f, i, mx in fix_string_fields:
             fm = fms.getFieldMap(i)
             fld = fm.outputField
@@ -305,7 +301,6 @@ class ResultsUtils(object):
             fms.replaceFieldMap(i, fm)
 
         sus_single_fields = [i for i, f in enumerate(fms.fields) if f.type == "Single"]
-        self.logger.info("sus_single_fields {}".format(sus_single_fields))
         for i in sus_single_fields:
             fm = fms.getFieldMap(i)
             fld = fm.outputField
@@ -313,46 +308,7 @@ class ResultsUtils(object):
             fm.outputField = fld
             fms.replaceFieldMap(i, fm)
 
-        self.logger.info("converting {}".format(out_name_full))
         TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
 
         return out_name_full
-
-# def table_conversion(in_rows, out_path, out_name):
-#
-#     """ Copy a file-based table to a local database, returns full path to new table if successful"""
-#     fms = FieldMappings()
-#     fms.addTable(in_rows)
-#
-#     # make a list of fields we will look at for size suitability
-#     sus_fields, i = [], -1
-#     for f in fms.fields:
-#         i += 1
-#         if f.type == "String":  # and f.length == 255:
-#             sus_fields.append([f.name, i])  # need the index later on...
-#
-#     # now we will run through the rows and see if we have issues
-#     failed = ""
-#     try:
-#         failed = "on opening file {0}".format(in_rows)
-#         with open(in_rows) as csv_file:
-#             reader = csv.DictReader(csv_file)
-#             for row in reader:  # each row is a dict of results
-#                 failed = "on using row {0}".format(row)
-#                 for f, j in sus_fields:
-#                     ln = len(row[f])
-#                     fm = fms.getFieldMap(j)
-#                     fld = fm.outputField
-#                     if ln > fld.length:
-#                         fld.length = ln + 10
-#                         fm.outputField = fld
-#                         fms.replaceFieldMap(j, fm)
-#
-#     except Exception as e:
-#         raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
-#
-#     TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
-#
-#     return os.path.join(out_path, out_name)
-
 
