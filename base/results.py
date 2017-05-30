@@ -286,10 +286,8 @@ class ResultsUtils(object):
             fm = fms.getFieldMap(i)
             fm.outputField.type = "String"
             fm.outputField.length = 8000
-            # fld.length = mx + 10
-            # fm.outputField = fld
             fms.replaceFieldMap(i, fm)
-            self.logger.info("Field {} length set to {}".format(fm.outputField.name, fm.outputField.length))
+            # self.logger.info("Field {} length set to {}".format(fm.outputField.name, fm.outputField.length))
 
         # with open(in_rows) as csv_file:
         #     reader = csv.DictReader(csv_file)
