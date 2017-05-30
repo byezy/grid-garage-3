@@ -124,24 +124,24 @@ class ResultsUtils(object):
         # here we will just store the keys from the first result, re-using these will force an error for any inconsistency
         if not os.path.isfile(self.pass_csv):
             result_fieldnames = results[0].keys()
-            result_fieldnames.append("proc_hist")
+            # result_fieldnames.append("proc_hist")
             setattr(self, "result_fieldnames", result_fieldnames)
             with open(self.pass_csv, "wb") as csv_file:
                 writer = csv.DictWriter(csv_file, delimiter=',', lineterminator='\n', fieldnames=self.result_fieldnames)
                 writer.writeheader()  # write the header on first call
             self.logger.info("Header written to '{}".format(self.pass_csv))
 
-        def get_geodata_source_history(dict):
-            geodata = dict.get("geodata", "geodata not set for result")
-            source_geodata = dict.get("source_geodata", "source not set for result")
-            proc_hist = getattr(self, "new_proc_hist", "proc_hist not set for result")
-            return "Deprecating"  # "{} << {} << {}".format(geodata, proc_hist, source_geodata)
+        # def get_geodata_source_history(dict):
+        #     geodata = dict.get("geodata", "geodata not set for result")
+        #     source_geodata = dict.get("source_geodata", "source not set for result")
+        #     proc_hist = getattr(self, "new_proc_hist", "proc_hist not set for result")
+        #     return "Deprecating"  # "{} << {} << {}".format(geodata, proc_hist, source_geodata)
 
         # write the data
         with open(self.pass_csv, "ab") as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames=self.result_fieldnames)
-            for r in results:  # add proc_hist data
-                r["proc_hist"] = "deprecating"  # get_geodata_source_history(r)
+            # for r in results:  # add proc_hist data
+            #     r["proc_hist"] = "deprecating"  # get_geodata_source_history(r)
 
             writer.writerows(results)
             self.pass_count += len(results)
@@ -195,8 +195,8 @@ class ResultsUtils(object):
                 except KeyError:
                     geodata = "geodata not set for row"
         source_geodata = row.get("source_geodata", "source not set for row")
-        proc_hist = getattr(self, "new_proc_hist", "proc_hist not set for row")
-        row["proc_hist"] = "Deprecating"  #   "{} << {} << {}".format(geodata, proc_hist, source_geodata)
+        # proc_hist = getattr(self, "new_proc_hist", "proc_hist not set for row")
+        # row["proc_hist"] = "Deprecating"  #   "{} << {} << {}".format(geodata, proc_hist, source_geodata)
 
         # write the failure record
         with open(self.fail_csv, "ab") as csv_file:
@@ -282,31 +282,41 @@ class ResultsUtils(object):
         fms = FieldMappings()
         fms.addTable(in_rows)
 
-        with open(in_rows) as csv_file:
-            reader = csv.DictReader(csv_file)
-            rows = [row for row in reader]
-
-        def get_max_string_length(field):
-
-            return max([len(d[field.name]) for d in rows])
-
-        sus_string_fields = [(f, i) for i, f in enumerate(fms.fields) if f.type == "String"]
-
-        fix_string_fields = [(f, i, get_max_string_length(f)) for f, i in sus_string_fields]
-        for f, i, mx in fix_string_fields:
+        for i, f in enumerate(fms):
             fm = fms.getFieldMap(i)
-            fld = fm.outputField
-            fld.length = mx + 10
-            fm.outputField = fld
+            fm.outputField.type = "String"
+            fm.outputField.length = 8000
+            # fld.length = mx + 10
+            # fm.outputField = fld
             fms.replaceFieldMap(i, fm)
+            self.logger.info("Field {} length set to {}".format(fm.outputField.name, fm.outputField.length))
 
-        sus_single_fields = [i for i, f in enumerate(fms.fields) if f.type == "Single"]
-        for i in sus_single_fields:
-            fm = fms.getFieldMap(i)
-            fld = fm.outputField
-            fld.type = "Double"
-            fm.outputField = fld
-            fms.replaceFieldMap(i, fm)
+        # with open(in_rows) as csv_file:
+        #     reader = csv.DictReader(csv_file)
+        #     rows = [row for row in reader]
+        #
+        # def get_max_string_length(field):
+        #     return max([len(d[field.name]) for d in rows])
+        #
+        # sus_string_fields = [(f, i) for i, f in enumerate(fms.fields) if f.type == "String"]
+        #
+        # fix_string_fields = [(f, i, get_max_string_length(f)) for f, i in sus_string_fields]
+        # for f, i, mx in fix_string_fields:
+        #     fm = fms.getFieldMap(i)
+        #     fm.outputField.length = mx + 10
+        #     # fld.length = mx + 10
+        #     # fm.outputField = fld
+        #     fms.replaceFieldMap(i, fm)
+        #     self.logger.info("Field {} length set to {}".format(fm.outputField.name, fm.outputField.length))
+        #
+        # sus_single_fields = [i for i, f in enumerate(fms.fields) if f.type == "Single"]
+        # for i in sus_single_fields:
+        #     fm = fms.getFieldMap(i)
+        #     fm.outputField.type = "Double"
+        #     # fld.type = "Double"
+        #     # fm.outputField = fld
+        #     fms.replaceFieldMap(i, fm)
+        #     self.logger.info("Field {} (type = Single) set to {}".format(fm.outputField.name, fm.outputField.type))
 
         TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
 
