@@ -77,41 +77,41 @@ def static_vars(**kwargs):
 #     return ap.ListFields(dataset, wild_card, field_type)
 
 
-def table_conversion(in_rows, out_path, out_name):
-
-    """ Copy a file-based table to a local database, returns full path to new table if successful"""
-    fms = ap.FieldMappings()
-    fms.addTable(in_rows)
-
-    with open(in_rows) as csv_file:
-
-        reader = csv.DictReader(csv_file)
-
-    def get_max_string_length(field):
-
-        return max([len(d[field]) for d in reader])
-
-    sus_string_fields = [(f, i) for i, f in enumerate(fms.fields) if f.type == "String"]
-    fix_string_fields = [(f, i, get_max_string_length(f)) for f, i, x in sus_string_fields]
-    for f, i, mx in fix_string_fields:
-        fm = fms.getFieldMap(i)
-        fld = fm.outputField
-        fld.length = mx + 10
-        fm.outputField = fld
-        fms.replaceFieldMap(i, fm)
-
-    sus_single_fields = [i for i, f in enumerate(fms.fields) if f.type == "Single"]
-    for i in sus_single_fields:
-        fm = fms.getFieldMap(i)
-        fld = fm.outputField
-        fld.type = "Double"
-        fm.outputField = fld
-        fms.replaceFieldMap(i, fm)
-
-    ap.TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
-    ret = os.path.join(out_path, out_name)
-
-    return ret
+# def table_conversion(in_rows, out_path, out_name):
+#
+#     """ Copy a file-based table to a local database, returns full path to new table if successful"""
+#     fms = ap.FieldMappings()
+#     fms.addTable(in_rows)
+#
+#     with open(in_rows) as csv_file:
+#
+#         reader = csv.DictReader(csv_file)
+#
+#     def get_max_string_length(field):
+#
+#         return max([len(d[field]) for d in reader])
+#
+#     sus_string_fields = [(f, i) for i, f in enumerate(fms.fields) if f.type == "String"]
+#     fix_string_fields = [(f, i, get_max_string_length(f)) for f, i, x in sus_string_fields]
+#     for f, i, mx in fix_string_fields:
+#         fm = fms.getFieldMap(i)
+#         fld = fm.outputField
+#         fld.length = mx + 10
+#         fm.outputField = fld
+#         fms.replaceFieldMap(i, fm)
+#
+#     sus_single_fields = [i for i, f in enumerate(fms.fields) if f.type == "Single"]
+#     for i in sus_single_fields:
+#         fm = fms.getFieldMap(i)
+#         fld = fm.outputField
+#         fld.type = "Double"
+#         fm.outputField = fld
+#         fms.replaceFieldMap(i, fm)
+#
+#     ap.TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
+#     ret = os.path.join(out_path, out_name)
+#
+#     return ret
 
 
 def describe_arc(geodata):

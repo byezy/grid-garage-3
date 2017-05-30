@@ -1,6 +1,6 @@
 from base.utils import make_tuple
 from arcpy import Describe, TableToTable_conversion, FieldMappings
-from shutil import copyfile
+# from shutil import copyfile
 from sys import exc_info
 from traceback import format_exception
 import os
@@ -226,7 +226,7 @@ class ResultsUtils(object):
 
         if self.output_workspace_type == "LocalDatabase":  # it's an fgdb
             try:
-                self.pass_table = table_conversion(self.pass_csv, self.output_workspace, self.pass_table_name)
+                self.pass_table = self.table_conversion(self.pass_csv, self.output_workspace, self.pass_table_name)
                 os.remove(self.pass_csv)
             except Exception as e:
                 self.logger.warn("Table conversion failed: {}".format(e))
@@ -255,7 +255,7 @@ class ResultsUtils(object):
 
         if self.output_workspace_type != "FileSystem":  # it's a a fgdb or rmdb
             try:
-                self.fail_table = table_conversion(self.fail_csv, self.output_workspace, self.fail_table_name)
+                self.fail_table = self.table_conversion(self.fail_csv, self.output_workspace, self.fail_table_name)
                 os.remove(self.fail_csv)
             except Exception as e:
                 self.logger.warn("Table conversion failed: {}".format(e))
@@ -274,41 +274,85 @@ class ResultsUtils(object):
 
         return
 
+    def table_conversion(self, in_rows, out_path, out_name):
+        """ Copy a file-based table to a local database, returns full path to new table if successful"""
+        out_name_full = os.path.join(out_path, out_name)
+        self.logger.info("Converting {} --> {}".format(in_rows, out_name_full))
 
-def table_conversion(in_rows, out_path, out_name):
+        fms = FieldMappings()
+        fms.addTable(in_rows)
 
-    """ Copy a file-based table to a local database, returns full path to new table if successful"""
-    fms = FieldMappings()
-    fms.addTable(in_rows)
-
-    # make a list of fields we will look at for size suitability
-    sus_fields, i = [], -1
-    for f in fms.fields:
-        i += 1
-        if f.type == "String":  # and f.length == 255:
-            sus_fields.append([f.name, i])  # need the index later on...
-
-    # now we will run through the rows and see if we have issues
-    failed = ""
-    try:
-        failed = "on opening file {0}".format(in_rows)
         with open(in_rows) as csv_file:
             reader = csv.DictReader(csv_file)
-            for row in reader:  # each row is a dict of results
-                failed = "on using row {0}".format(row)
-                for f, j in sus_fields:
-                    ln = len(row[f])
-                    fm = fms.getFieldMap(j)
-                    fld = fm.outputField
-                    if ln > fld.length:
-                        fld.length = ln + 10
-                        fm.outputField = fld
-                        fms.replaceFieldMap(j, fm)
+            rows = [row for row in reader]
 
-    except Exception as e:
-        raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
+        self.logger.info("reader {}".format(rows))
 
-    TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
+        def get_max_string_length(field):
 
-    return os.path.join(out_path, out_name)
+            return max([len(d[field.name]) for d in rows])
+
+        sus_string_fields = [(f, i) for i, f in enumerate(fms.fields) if f.type == "String"]
+        self.logger.info("sus_string_fields {}".format(sus_string_fields))
+
+        fix_string_fields = [(f, i, get_max_string_length(f)) for f, i in sus_string_fields]
+        self.logger.info("fix_string_fields {}".format(fix_string_fields))
+        for f, i, mx in fix_string_fields:
+            fm = fms.getFieldMap(i)
+            fld = fm.outputField
+            fld.length = mx + 10
+            fm.outputField = fld
+            fms.replaceFieldMap(i, fm)
+
+        sus_single_fields = [i for i, f in enumerate(fms.fields) if f.type == "Single"]
+        self.logger.info("sus_single_fields {}".format(sus_single_fields))
+        for i in sus_single_fields:
+            fm = fms.getFieldMap(i)
+            fld = fm.outputField
+            fld.type = "Double"
+            fm.outputField = fld
+            fms.replaceFieldMap(i, fm)
+
+        self.logger.info("converting {}".format(out_name_full))
+        TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
+
+        return out_name_full
+
+# def table_conversion(in_rows, out_path, out_name):
+#
+#     """ Copy a file-based table to a local database, returns full path to new table if successful"""
+#     fms = FieldMappings()
+#     fms.addTable(in_rows)
+#
+#     # make a list of fields we will look at for size suitability
+#     sus_fields, i = [], -1
+#     for f in fms.fields:
+#         i += 1
+#         if f.type == "String":  # and f.length == 255:
+#             sus_fields.append([f.name, i])  # need the index later on...
+#
+#     # now we will run through the rows and see if we have issues
+#     failed = ""
+#     try:
+#         failed = "on opening file {0}".format(in_rows)
+#         with open(in_rows) as csv_file:
+#             reader = csv.DictReader(csv_file)
+#             for row in reader:  # each row is a dict of results
+#                 failed = "on using row {0}".format(row)
+#                 for f, j in sus_fields:
+#                     ln = len(row[f])
+#                     fm = fms.getFieldMap(j)
+#                     fld = fm.outputField
+#                     if ln > fld.length:
+#                         fld.length = ln + 10
+#                         fm.outputField = fld
+#                         fms.replaceFieldMap(j, fm)
+#
+#     except Exception as e:
+#         raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
+#
+#     TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
+#
+#     return os.path.join(out_path, out_name)
+
 
