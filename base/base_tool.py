@@ -481,22 +481,16 @@ class BaseTool(object):
         arcpy.MakeTableView_management(gg_in_table_text, gg_in_table)
 
         gg_in_table_fields = [f.name for f in arcpy.ListFields(gg_in_table)]
-        proc_hist_fieldname = "proc_hist"
-        if proc_hist_fieldname not in gg_in_table_fields:
-            arcpy.AddField_management(gg_in_table, proc_hist_fieldname, "TEXT", None, None, 500000)
 
         # map fields
         num_fields = len(key_names)  # [rf1, rf2, ...]
-        # f_names = ["{0}_field_{1}".format(parameter_name, i) for i in range(0, num_fields)]  # [f_0, f_1, ...]
         f_names = ["{0}_field_{1}".format(parameter_name, k) for k in key_names]  # [f_0, f_1, ...]
         f_vals = [self.get_parameter(f_name).valueAsText for f_name in f_names]
-        f_vals.append(proc_hist_fieldname)
         if nonkey_names:
             f_vals.extend(nonkey_names)
         rows = [r for r in arcpy.da.SearchCursor(gg_in_table, f_vals)]
 
         # iterate
-        key_names.append(proc_hist_fieldname)
         if nonkey_names:
             key_names.extend(nonkey_names)
 
@@ -528,13 +522,9 @@ class BaseTool(object):
         self.debug("param.valueAsText.split(';' =  {}".format(param.valueAsText.split(";")))
         rows = param.valueAsText.split(";") if multi_val else [param.valueAsText]
 
-        for row in rows:  # add proc_hist field
-            make_tuple(row).append("")
-
         self.debug("Processing rows will be {}".format(rows))
 
         # iterate
-        key_names.append("proc_hist")
         if nonkey_names:
             key_names.extend(nonkey_names)
 
@@ -562,10 +552,10 @@ class BaseTool(object):
 
         for row in rows:
             try:
-                try:
-                    self.result.new_proc_hist = "To be deprecated"  # "Tool='{}' Parameters={} Row={}".format(self.label, self.get_parameter_dict(), row)
-                except AttributeError:
-                    pass
+                # try:
+                #     self.result.new_proc_hist = "To be deprecated"  # "Tool='{}' Parameters={} Row={}".format(self.label, self.get_parameter_dict(), row)
+                # except AttributeError:
+                #     pass
 
                 row_num += 1
                 self.info("{} > Processing row {} of {}".format(time_stamp("%H:%M:%S%f")[:-3], row_num, total_rows))
