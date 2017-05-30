@@ -6,6 +6,8 @@ from re import compile
 import arcpy as ap
 import collections
 import csv
+import numpy
+
 
 # arc_data_types = "Any,Container,Geo,FeatureDataset,FeatureClass,PlanarGraph,GeometricNetwork,Topology,Text,Table,RelationshipClass,RasterDataset,RasterBand,TIN,CadDrawing,RasterCatalog,Toolbox,Tool,NetworkDataset,Terrain,RepresentationClass,CadastralFabric,SchematicDataset,Locator"
 arc_data_types = "Any,CadDrawing,CadastralFabric,Container,FeatureClass,FeatureDataset,Geo,GeometricNetwork,LasDataset,Layer,Locator,Map,MosaicDataset,NetworkDataset,PlanarGraph,RasterCatalog,RasterDataset,RelationshipClass,RepresentationClass,Style,Table,Terrain,Text,Tin,Tool,Toolbox,Topology"
@@ -81,46 +83,37 @@ def table_conversion(in_rows, out_path, out_name):
     fms = ap.FieldMappings()
     fms.addTable(in_rows)
 
-    # make a list of fields we will look at for size suitability
-    sus_fields, i = [], -1
-    for f in fms.fields:
-        i += 1
-        if f.type == "String":  # and f.length == 255:
-            sus_fields.append([f.name, i])  # need the index later on...
-            
+    with open(in_rows) as csv_file:
 
-    # now we will run through the rows and see if we have issues
-    failed = ""
-    try:
-        failed = "on opening file {0}".format(in_rows)
-        with open(in_rows) as csv_file:
-            reader = csv.DictReader(csv_file)
-            for row in reader:  # each row is a dict of results
-                failed = "on using row {0}".format(row)
-                for f, j in sus_fields:
-                    ln = len(row[f])
-                    fm = fms.getFieldMap(j)
-                    fld = fm.outputField
-                    if ln > fld.length:
-                        fld.length = ln + 10
-                        fm.outputField = fld
-                        fms.replaceFieldMap(j, fm)
+        reader = csv.DictReader(csv_file)
 
-    except Exception as e:
-        raise ValueError("'{0}' validation failed: {1} {2}".format(in_rows, failed, str(e)))
+    def get_max_string_length(field):
 
-    # try:
-        # TableToTable_conversion (in_rows, out_path, out_name, {where_clause}, {field_mapping}, {config_keyword})
+        return max([len(d[field]) for d in reader])
+
+    sus_string_fields = [(f, i) for i, f in enumerate(fms.fields) if f.type == "String"]
+    fix_string_fields = [(f, i, get_max_string_length(f)) for f, i, x in sus_string_fields]
+    for f, i, mx in fix_string_fields:
+        fm = fms.getFieldMap(i)
+        fld = fm.outputField
+        fld.length = mx + 10
+        fm.outputField = fld
+        fms.replaceFieldMap(i, fm)
+
+    sus_single_fields = [i for i, f in enumerate(fms.fields) if f.type == "Single"]
+    for i in sus_single_fields:
+        fm = fms.getFieldMap(i)
+        fld = fm.outputField
+        fld.type = "Double"
+        fm.outputField = fld
+        fms.replaceFieldMap(i, fm)
+
     ap.TableToTable_conversion(in_rows, out_path, out_name, None, fms, None)
     ret = os.path.join(out_path, out_name)
-
-    # except Exception as e:
-    #     ret = None
 
     return ret
 
 
-# @base.log.log_error
 def describe_arc(geodata):
 
     if not geodata_exists(geodata):
@@ -129,22 +122,17 @@ def describe_arc(geodata):
     return ap.Describe(geodata)
 
 
-# @base.log.log_error
 def is_local_gdb(workspace):
     return describe_arc(workspace).workspaceType == "LocalDatabase"
 
 
-# @base.log.log_error
 def is_file_system(workspace):
     return describe_arc(workspace).workspaceType == "FileSystem"
 
 
-# @base.log.log_error
 def get_search_cursor_rows(in_table, field_names, where_clause=None):
 
     def _get_search_cursor(in_table_sc, field_names_sc, where_clause_sc=where_clause, spatial_reference=None, explode_to_points=None, sql_clause=None):
-
-        # base.log.debug(locals())
 
         return ap.da.SearchCursor(in_table_sc, field_names_sc, where_clause_sc, spatial_reference, explode_to_points, sql_clause)
 
@@ -153,12 +141,9 @@ def get_search_cursor_rows(in_table, field_names, where_clause=None):
     rows = [row for row in sc]
     del sc
 
-    # base.log.debug("Returning rows = {}".format(rows))
-
     return rows
 
 
-# @base.log.log_error
 def geodata_exists(geodata):
     if geodata:
         return ap.Exists(geodata)
@@ -166,12 +151,10 @@ def geodata_exists(geodata):
         return False
 
 
-# @base.log.log_error
 def make_tuple(ob):
     return ob if isinstance(ob, (list, tuple)) else [ob]
 
 
-# @base.log.log_error
 def split_up_filename(filename):
     """ Return strings representing the parts of the filename.
 
@@ -185,7 +168,6 @@ def split_up_filename(filename):
     return the_path, basename, name, ext
 
 
-# @base.log.log_error
 def time_stamp(fmt='%Y%m%d_%H%M%S'):
     """ Return a current time stamp.
 
@@ -197,7 +179,6 @@ def time_stamp(fmt='%Y%m%d_%H%M%S'):
     return datetime.datetime.now().strftime(fmt)
 
 
-# @base.log.log_error
 def join_up_filename(workspace, filename, ext=''):
     """ Joins file elements into a full path and name.
 
@@ -214,7 +195,6 @@ def join_up_filename(workspace, filename, ext=''):
     return os.path.join(workspace, filename) + ext
 
 
-# @base.log.log_error
 def get_ordered_dict_from_keys(key_seq, initial_val):
     return OrderedDict.fromkeys(sorted(key_seq), initial_val)
 
