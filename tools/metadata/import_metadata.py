@@ -1,11 +1,9 @@
 from base.base_tool import BaseTool
 from base.results import result
-from base.utils import split_up_filename, validate_geodata
+from base.utils import validate_geodata
 from base.method_decorators import input_tableview, input_output_table
 from arcpy import ImportMetadata_conversion
-from os.path import exists, join
 from hermes import Paperwork
-# from datetime import datetime
 
 
 tool_settings = {"label": "Import Metadata",
@@ -60,7 +58,6 @@ class ImportMetadataTool(BaseTool):
                         ImportMetadata_conversion(source, "FROM_ISO_19139", geodata, "ENABLED")
                     except:
                         self.warn("Looks like all 'ImportMetadata_conversion' variant calls failed.")
-
 
         pw = Paperwork(dataset=geodata)
         meta = pw.convert()
