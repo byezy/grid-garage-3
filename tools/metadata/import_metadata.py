@@ -26,7 +26,7 @@ class ImportMetadataTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.do_import, "geodata_table", ["geodata"], return_to_results=True)
+        self.iterate_function_on_tableview(self.do_import, "geodata_table", ["geodata", "source"], return_to_results=True)
 
         return
 
