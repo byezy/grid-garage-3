@@ -118,7 +118,7 @@ class ImportMetadataTool(BaseTool):
             # if exists(tip_file):
             #     pass
             # else:
-                tip_file = None
+            #     tip_file = None
         #     # lines = [line.rstrip() for line in open(tip_file)]
         #     # lines = [l.replace(":", "=", 1) for l in lines]
         #     # # lines = ["title={0}".format(l) for l in lines if not ":"]

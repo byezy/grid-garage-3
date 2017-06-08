@@ -38,6 +38,7 @@ from tools.metadata.import_tips import ImportTipFilesToTableMetadataTool
 from tools.metadata.export_tips import ExportTipsToFileMetadataTool
 from tools.metadata.export_xml import ExportXmlMetadataTool
 from tools.metadata.id_from_xml import GetIARIDFromXmlTool
+from tools.metadata.import_metadata import ImportMetadataTool
 
 
 class Toolbox(object):
@@ -83,6 +84,7 @@ class Toolbox(object):
                           ImportTipFilesToTableMetadataTool,
                           ExportTipsToFileMetadataTool,
                           ExportXmlMetadataTool,
-                          GetIARIDFromXmlTool}
+                          GetIARIDFromXmlTool,
+                          ImportMetadataTool}
 
         self.tools = list(geodata_tools | feature_tools | raster_tools | metadata_tools)
