@@ -32,16 +32,17 @@ class RasteriseByTableTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.rasterise, "features_table", ["feature", "fields"])
+        self.iterate_function_on_tableview(self.rasterise, "features_table", ["geodata", "table_fields"])
 
         return
 
     def rasterise(self, data):
 
-        feat_ds = data["feature"]
+        feat_ds = data["geodata"]
+
         utils.validate_geodata(feat_ds, vector=True)
 
-        fields_string = data["fields"]
+        fields_string = data["table_fields"].strip().strip("[").strip("]")
         try:
             target_fields = [field.strip() for field in fields_string.split(",")]
         except:
@@ -59,7 +60,6 @@ class RasteriseByTableTool(BaseTool):
                 self.result.add_pass({"geodata": r_out, "source_geodata": feat_ds, "source_field": field})
 
                 try:
-                    # ImportMetadata_conversion(Source_Metadata, Import_Type, Target_Metadata, Enable_automatic_updates)
                     ImportMetadata_conversion(feat_ds, "FROM_ARCGIS", r_out, "ENABLED")
                 except:
                     self.warn("ImportMetadata_conversion - FROM_ARCGIS - failed")
