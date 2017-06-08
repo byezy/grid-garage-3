@@ -3,7 +3,7 @@ from base.results import result
 from base import utils
 from base.method_decorators import input_output_table_with_output_affixes, input_tableview, parameter, raster_formats
 from os.path import splitext
-from arcpy import FeatureToRaster_conversion
+from arcpy import FeatureToRaster_conversion, ImportMetadata_conversion
 
 
 tool_settings = {"label": "Rasterise by Table",
@@ -52,11 +52,32 @@ class RasteriseByTableTool(BaseTool):
 
         for field in target_fields:
             try:
+
                 r_out = utils.make_raster_name("{0}_{1}".format(splitext(feat_ds)[0], field), self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
                 self.info("Rasterising {0} on {1} -> {2}".format(feat_ds, field, r_out))
                 FeatureToRaster_conversion(feat_ds, field, r_out)
                 self.result.add_pass({"geodata": r_out, "source_geodata": feat_ds, "source_field": field})
+
+                try:
+                    # ImportMetadata_conversion(Source_Metadata, Import_Type, Target_Metadata, Enable_automatic_updates)
+                    ImportMetadata_conversion(feat_ds, "FROM_ARCGIS", r_out, "ENABLED")
+                except:
+                    self.warn("ImportMetadata_conversion - FROM_ARCGIS - failed")
+                    try:
+                        ImportMetadata_conversion(feat_ds, "FROM_ESRIISO", r_out, "ENABLED")
+                    except:
+                        self.warn("ImportMetadata_conversion - FROM_ESRIISO - failed")
+                        try:
+                            ImportMetadata_conversion(feat_ds, "FROM_FGDC", r_out, "ENABLED")
+                        except:
+                            self.warn("ImportMetadata_conversion - FROM_FGDC - failed")
+                            try:
+                                ImportMetadata_conversion(feat_ds, "FROM_ISO_19139", r_out, "ENABLED")
+                            except:
+                                self.warn("Looks like all 'ImportMetadata_conversion' variant calls failed.")
+
             except Exception as e:
+
                 self.error("FAILED rasterising {0} on {1}: {2}".format(feat_ds, field, str(e)))
                 self.result.add_fail(data)
 
