@@ -92,13 +92,15 @@ class CreateTipsTableMetadataTool(BaseTool):
                 idx = int(v[1])-1 if len(v) > 1 else None      # 2
             except Exception as e:
                 self.warn("Bad format '{}', use list:index (1-based)".format(v))
-                raise e
+                fld_tips[k] = "{}{}".format("", text)
+                continue
 
             desc = describe(geodata)
             try:
                 new_val = desc[field]
             except [KeyError, AttributeError] as e:
                 self.warn(": '{}' not in {}".format(field, desc.keys()))
+                fld_tips[k] = "{}{}".format("", text)
                 continue
 
             if idx:
@@ -107,6 +109,7 @@ class CreateTipsTableMetadataTool(BaseTool):
                     new_val = new_val[idx].strip()
                 except IndexError as e:
                     self.warn("{} out of range {}: {}".format(idx+1, range(1, len(new_val)+1), new_val))
+                    fld_tips[k] = "{}{}".format("", text)
                     continue
 
             fld_tips[k] = "{}{}".format(new_val, text)
