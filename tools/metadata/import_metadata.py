@@ -53,13 +53,14 @@ class ImportMetadataTool(BaseTool):
             try:
                 ImportMetadata_conversion(source, x, geodata, "ENABLED")
                 import_ok = True
+                passed = x
                 self.info("Imported type {}".format(x))
             except:
                 pass
 
         if not import_ok:
             self.warn("Looks like all 'ImportMetadata_conversion' variant calls failed {}".format(from_types))
-            x = None
+            passed = None
 
         # try:
         #     ImportMetadata_conversion(source, "FROM_ARCGIS", geodata, "ENABLED")
@@ -87,7 +88,7 @@ class ImportMetadataTool(BaseTool):
         return {"geodata": geodata,
                 # "geodata_meta": "imported no error",
                 "source": source,
-                "type": x}  #,
+                "type": passed}  #,
                 # "source_meta": "exported no error"}
 
 
