@@ -99,7 +99,7 @@ class CreateTipsTableMetadataTool(BaseTool):
                 new_val = desc[field]
             except [KeyError, AttributeError] as e:
                 self.warn(": '{}' not in {}".format(field, desc.keys()))
-                raise e
+                continue
 
             if idx:
                 try:
@@ -107,7 +107,7 @@ class CreateTipsTableMetadataTool(BaseTool):
                     new_val = new_val[idx].strip()
                 except IndexError as e:
                     self.warn("{} out of range {}: {}".format(idx+1, range(1, len(new_val)+1), new_val))
-                    raise e
+                    continue
 
             fld_tips[k] = "{}{}".format(new_val, text)
 

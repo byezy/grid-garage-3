@@ -14,9 +14,14 @@ tool_settings = {"label": "Import Metadata",
 
 @result
 class ImportMetadataTool(BaseTool):
+
     def __init__(self):
+
         BaseTool.__init__(self, tool_settings)
+
         self.execution_list = [self.iterate]
+
+        return
 
     @input_tableview("geodata_table", "Table of Geodata", False, ["source:source:", "geodata:geodata:"])
     @input_output_table
@@ -65,10 +70,10 @@ class ImportMetadataTool(BaseTool):
         pw = Paperwork(dataset=source)
         meta_src = pw.convert()
 
-        return {"geodata": geodata,  # "metadataRetrieved": metadata_retrieved,
+        return {"geodata": geodata,
                 "geodata_meta": meta,
                 "source": meta,
-                "source_meta": meta_src}  #,
+                "source_meta": meta_src}
 
 
 # ImportMetadata_conversion(Source_Metadata, Import_Type, Target_Metadata, Enable_automatic_updates)
