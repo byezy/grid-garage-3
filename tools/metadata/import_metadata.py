@@ -47,33 +47,48 @@ class ImportMetadataTool(BaseTool):
 
         self.info("Importing metadata from {} to {}".format(source, geodata))
 
-        try:
-            ImportMetadata_conversion(source, "FROM_ARCGIS", geodata, "ENABLED")
-        except:
-            self.warn("ImportMetadata_conversion - FROM_ARCGIS - failed")
+        import_ok = False
+        from_types = ["FROM_ARCGIS", "FROM_ESRIISO", "FROM_FGDC", "FROM_ISO_19139"]
+        for x in from_types:
             try:
-                ImportMetadata_conversion(source, "FROM_ESRIISO", geodata, "ENABLED")
+                ImportMetadata_conversion(source, x, geodata, "ENABLED")
+                import_ok = True
+                self.info("Imported type {}".format(x))
             except:
-                self.warn("ImportMetadata_conversion - FROM_ESRIISO - failed")
-                try:
-                    ImportMetadata_conversion(source, "FROM_FGDC", geodata, "ENABLED")
-                except:
-                    self.warn("ImportMetadata_conversion - FROM_FGDC - failed")
-                    try:
-                        ImportMetadata_conversion(source, "FROM_ISO_19139", geodata, "ENABLED")
-                    except:
-                        self.warn("Looks like all 'ImportMetadata_conversion' variant calls failed.")
+                pass
 
-        pw = Paperwork(dataset=geodata)
-        meta = pw.convert()
+        if not import_ok:
+            self.warn("Looks like all 'ImportMetadata_conversion' variant calls failed {}".format(from_types))
+            x = None
 
-        pw = Paperwork(dataset=source)
-        meta_src = pw.convert()
+        # try:
+        #     ImportMetadata_conversion(source, "FROM_ARCGIS", geodata, "ENABLED")
+        # except:
+        #     self.warn("ImportMetadata_conversion - FROM_ARCGIS - failed")
+        #     try:
+        #         ImportMetadata_conversion(source, "FROM_ESRIISO", geodata, "ENABLED")
+        #     except:
+        #         self.warn("ImportMetadata_conversion - FROM_ESRIISO - failed")
+        #         try:
+        #             ImportMetadata_conversion(source, "FROM_FGDC", geodata, "ENABLED")
+        #         except:
+        #             self.warn("ImportMetadata_conversion - FROM_FGDC - failed")
+        #             try:
+        #                 ImportMetadata_conversion(source, "FROM_ISO_19139", geodata, "ENABLED")
+        #             except:
+        #                 self.warn("Looks like all 'ImportMetadata_conversion' variant calls failed.")
+
+        # pw = Paperwork(dataset=geodata)
+        # meta = pw.convert()
+        #
+        # pw = Paperwork(dataset=source)
+        # meta_src = pw.convert()
 
         return {"geodata": geodata,
-                "geodata_meta": meta,
-                "source": meta,
-                "source_meta": meta_src}
+                # "geodata_meta": "imported no error",
+                "source": source,
+                "type": x}  #,
+                # "source_meta": "exported no error"}
 
 
 # ImportMetadata_conversion(Source_Metadata, Import_Type, Target_Metadata, Enable_automatic_updates)
