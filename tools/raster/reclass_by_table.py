@@ -26,7 +26,7 @@ class ReclassByTableRasterTool(BaseTool):
         return
 
     @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:"])
-    @input_tableview("in_remap_table", "Remap Table", False, ["Output Value::", "To Value::", "From Value::"])
+    @input_tableview("in_remap_table", "Remap Table", False, ["Output Value:output_value_field:", "To Value:to_value_field:", "From Value:from_value_field:"])
     @parameter("missing_values", "Missing value treatment", "GPString", "Optional", False, "Input", data_nodata, None, None, data_nodata[0], "Options")
     @parameter("raster_format", "Format for output rasters", "GPString", "Required", False, "Input", raster_formats, None, None, "Esri Grid")
     @input_output_table_with_output_affixes
@@ -37,9 +37,10 @@ class ReclassByTableRasterTool(BaseTool):
     def iterate(self):
 
         p = self.get_parameter_dict()
-        self.from_value_field = p["in_remap_table_field_2"]
-        self.to_value_field = p["in_remap_table_field_1"]
-        self.output_value_field = p["in_remap_table_field_0"]
+
+        self.from_value_field = p["in_remap_table_field_from_value_field"]
+        self.to_value_field = p["in_remap_table_field_to_value_field"]
+        self.output_value_field = p["in_remap_table_field_output_value_field"]
 
         self.iterate_function_on_tableview(self.reclass, "raster_table", ["geodata"], return_to_results=True)
 
