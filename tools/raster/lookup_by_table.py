@@ -36,7 +36,7 @@ class LookupByTableRasterTool(BaseTool):
 
     def lookup(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
 
         utils.validate_geodata(ras, raster=True)
 

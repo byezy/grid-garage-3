@@ -548,10 +548,10 @@ class BaseTool(object):
         total_rows = len(rows)
         self.info("{} items to process".format(total_rows))
         row_num = 0
-        try:
-            add = log_error(self.result.add_pass)
-        except AttributeError:
-            pass
+        # try:
+        #     add = log_error(self.result.add_pass)
+        # except AttributeError:
+        #     pass
 
         for row in rows:
             try:

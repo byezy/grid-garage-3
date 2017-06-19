@@ -48,8 +48,12 @@ class AggregateRasterTool(BaseTool):
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
         self.info("Aggregating {} -->> {} ...".format(ras, ras_out))
-        self.info(locals())
-        self.info(self.__dict__)
+
+        self.info(ras)
+        self.info(self.cell_factor)
+        self.info(self.aggregation_type)
+        self.info(self.extent_handling)
+        self.info(self.ignore_nodata)
 
         out = Aggregate(ras, self.cell_factor, self.aggregation_type, self.extent_handling, self.ignore_nodata)
 
