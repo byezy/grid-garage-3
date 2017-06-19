@@ -35,19 +35,21 @@ class AggregateRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.aggregate, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.aggregate, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def aggregate(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
 
         utils.validate_geodata(ras, raster=True)
 
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
 
-        self.info("Aggregating {0} -->> {1} ...".format(ras, ras_out))
+        self.info("Aggregating {} -->> {} ...".format(ras, ras_out))
+        self.info(locals())
+        self.info(self.__dict__)
 
         out = Aggregate(ras, self.cell_factor, self.aggregation_type, self.extent_handling, self.ignore_nodata)
 
@@ -55,4 +57,6 @@ class AggregateRasterTool(BaseTool):
 
         return {"geodata": ras_out, "source_geodata": ras}
 
+
 # "http://desktop.arcgis.com/en/arcmap/latest/tools/spatial-analyst-toolbox/aggregate.htm"
+#  Aggregate (in_raster, cell_factor, {aggregation_type}, {extent_handling}, {ignore_nodata})

@@ -19,7 +19,7 @@ class ReprojectRasterTool(BaseTool):
 
         return
 
-    @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:none"])
+    @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:"])
     @parameter("output_cs", "Output Spatial Reference", "Spatial Reference", "Required", False, "Input", None, "outputCoordinateSystem", None, None)
     @parameter("cell_size", "Cell Size", "GPSACellSize", "Required", False, "Input", None, "cellSize", None, None)
     @parameter("resample_type", "Resampling Method", "GPString", "Required", False, "Input", resample_methods, "resamplingMethod", None, None)
@@ -51,13 +51,13 @@ class ReprojectRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.reproject, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.reproject, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def reproject(self, data):
 
-        r_in = data['raster']
+        r_in = data['geodata']
 
         validate_geodata(r_in, raster=True, srs_known=True)
 

@@ -34,13 +34,13 @@ class CopyFeatureTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.process, "features_table", ["feature"])
+        self.iterate_function_on_tableview(self.process, "features_table", ["geodata"])
 
         return
 
     def process(self, data):
 
-        fc = data["feature"]
+        fc = data["geodata"]
         utils.validate_geodata(fc, vector=True)
 
         ws = self.result.output_workspace

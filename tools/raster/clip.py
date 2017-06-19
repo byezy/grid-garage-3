@@ -46,13 +46,13 @@ class ClipRasterTool(BaseTool):
             self.clipping_geometry = "NONE"
             self.polygons = "#"
 
-        self.iterate_function_on_tableview(self.clip, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.clip, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def clip(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
         validate_geodata(ras, raster=True, srs_known=True)
         ras_srs = get_srs(ras, raise_unknown_error=True)
         self.debug("raster srs = {}".format(ras_srs))

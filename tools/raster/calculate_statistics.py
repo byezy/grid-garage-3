@@ -34,13 +34,13 @@ class CalculateStatisticsRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.calculate, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.calculate, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def calculate(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
 
         utils.validate_geodata(ras, raster=True)
 

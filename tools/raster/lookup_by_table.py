@@ -30,7 +30,7 @@ class LookupByTableRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.lookup, "raster_table", ["lookup fields", "raster"])
+        self.iterate_function_on_tableview(self.lookup, "raster_table", ["table_fields", "geodata"])
 
         return
 
@@ -40,7 +40,7 @@ class LookupByTableRasterTool(BaseTool):
 
         utils.validate_geodata(ras, raster=True)
 
-        lookup_fields = data["lookup fields"].replace(" ", "").split(",")
+        lookup_fields = data["table_fields"].replace(" ", "").split(",")
         for f in lookup_fields:
             try:
                 self.info("Lookup field '{0}' in '{1}'".format(f, ras))

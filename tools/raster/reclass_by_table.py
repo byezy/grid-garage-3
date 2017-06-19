@@ -41,13 +41,13 @@ class ReclassByTableRasterTool(BaseTool):
         self.to_value_field = p["in_remap_table_field_1"]
         self.output_value_field = p["in_remap_table_field_0"]
 
-        self.iterate_function_on_tableview(self.reclass, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.reclass, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def reclass(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
 
         utils.validate_geodata(ras, raster=True)
 

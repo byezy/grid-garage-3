@@ -268,46 +268,49 @@ class BaseTool(object):
     @log_error
     def updateParameters(self, parameters):
 
-        ps = [(i, p.name) for i, p in enumerate(parameters)]
-        self.debug("BaseTool.updateParameters {}".format(ps))
+        try:
+            ps = [(i, p.name) for i, p in enumerate(parameters)]
+            self.debug("BaseTool.updateParameters {}".format(ps))
 
-        # set default result table name
+            # set default result table name
 
-        out_tbl_par = None
-        for p in parameters:
-            if p.name == "result_table_name":
-                out_tbl_par = p
-                break
+            out_tbl_par = None
+            for p in parameters:
+                if p.name == "result_table_name":
+                    out_tbl_par = p
+                    break
 
-        if out_tbl_par and out_tbl_par.value == "#run_id#":
-            out_tbl_par.value = self.run_id
+            if out_tbl_par and out_tbl_par.value == "#run_id#":
+                out_tbl_par.value = self.run_id
 
-        # validate workspace and raster format
+            # validate workspace and raster format
 
-        out_ws_par = None
-        for p in parameters:
-            if p.name == "output_workspace":
-                out_ws_par = p
-                break
+            out_ws_par = None
+            for p in parameters:
+                if p.name == "output_workspace":
+                    out_ws_par = p
+                    break
 
-        ras_fmt_par = None
-        for p in parameters:
-            if p.name == "raster_format":
-                ras_fmt_par = p
-                break
+            ras_fmt_par = None
+            for p in parameters:
+                if p.name == "raster_format":
+                    ras_fmt_par = p
+                    break
 
-        if out_ws_par and ras_fmt_par:
+            if out_ws_par and ras_fmt_par:
 
-            out_ws_par.clearMessage()
-            ras_fmt_par.clearMessage()
+                out_ws_par.clearMessage()
+                ras_fmt_par.clearMessage()
 
-            if out_ws_par.altered or ras_fmt_par.altered:
+                if out_ws_par.altered or ras_fmt_par.altered:
 
-                ws = out_ws_par.value
-                fmt = ras_fmt_par.value
+                    ws = out_ws_par.value
+                    fmt = ras_fmt_par.value
 
-                if is_local_gdb(ws) and fmt != "Esri Grid":
-                    ras_fmt_par.setErrorMessage("Invalid raster format for workspace type")
+                    if is_local_gdb(ws) and fmt != "Esri Grid":
+                        ras_fmt_par.setErrorMessage("Invalid raster format for workspace type")
+        except:
+            pass
 
         return
 

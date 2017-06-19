@@ -48,13 +48,13 @@ class ValuesAtPointsRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.process, "raster_table", ["raster"])
+        self.iterate_function_on_tableview(self.process, "raster_table", ["geodata"])
 
         return
 
     def process(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
         utils.validate_geodata(ras, raster=True, srs_known=True)
 
         d = utils.describe(ras)

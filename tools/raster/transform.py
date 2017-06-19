@@ -66,7 +66,7 @@ class TransformRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.transform, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.transform, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
@@ -80,7 +80,7 @@ class TransformRasterTool(BaseTool):
 
     def transform(self, data):
 
-        r_in = data["raster"]
+        r_in = data["geodata"]
         utils.validate_geodata(r_in, raster=True)
 
         r_out = utils.make_raster_name(r_in, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)

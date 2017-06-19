@@ -33,13 +33,13 @@ class BlockStatisticsRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.block_statistics, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.block_statistics, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def block_statistics(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
 
         validate_geodata(ras, raster=True)
 

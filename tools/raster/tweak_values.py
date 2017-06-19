@@ -20,7 +20,7 @@ class TweakValuesRasterTool(BaseTool):
 
         return
 
-    @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:none"])
+    @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:"])
     @parameter("scalar", "Scale Factor", "GPDouble", "Optional", False, "Input", None, None, None, None, "Options")
     @parameter("constant", "Constant Shift", "GPDouble", "Optional", False, "Input", None, None, None, None, "Options")
     @parameter("min_val", "Minimum value", "GPDouble", "Optional", False, "Input", None, None, None, None, "Options")
@@ -43,13 +43,13 @@ class TweakValuesRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.tweak, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.tweak, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def tweak(self, data):
 
-        r_in = data["raster"]
+        r_in = data["geodata"]
         utils.validate_geodata(r_in, raster=True)
 
         r_out = utils.make_raster_name(r_in, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)

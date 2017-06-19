@@ -32,13 +32,13 @@ class ResampleRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.resample, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.resample, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def resample(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
 
         utils.validate_geodata(ras, raster=True)
 

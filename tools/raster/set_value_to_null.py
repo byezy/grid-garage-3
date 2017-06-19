@@ -22,7 +22,7 @@ class SetValueToNullRasterTool(BaseTool):
 
         return
 
-    @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:none"])
+    @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:"])
     @parameter("val_to_null", "Value to Set Null", "GPDouble", "Required", False, "Input", None, None, None, None)
     @parameter("raster_format", "Format for output rasters", "GPString", "Required", False, "Input", raster_formats, None, None, "Esri Grid")
     @input_output_table_with_output_affixes
@@ -32,13 +32,13 @@ class SetValueToNullRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.set_null, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.set_null, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def set_null(self, data):
 
-        r_in = data['raster']
+        r_in = data['geodata']
 
         utils.validate_geodata(r_in, raster=True)
 

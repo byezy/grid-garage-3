@@ -40,13 +40,13 @@ class CopyRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.copy, "raster_table", ["raster"], return_to_results=True)
+        self.iterate_function_on_tableview(self.copy, "raster_table", ["geodata"], return_to_results=True)
 
         return
 
     def copy(self, data):
 
-        ras = data["raster"]
+        ras = data["geodata"]
 
         utils.validate_geodata(ras, raster=True)
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self.output_filename_suffix)
