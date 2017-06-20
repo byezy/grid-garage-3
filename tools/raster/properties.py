@@ -60,8 +60,15 @@ class BandPropetiesRasterTool(BaseTool):
             rb = Describe(b)
             desc2 = {"{}_{}".format(band, att): getattr(rb, att, None) for att in describe_field_groups["raster_band_properties"]}
             desc.update(desc2)
-            desc2 = {"{}_{}".format(band, p): GetRasterProperties_management(ras, p, band).getOutput(0) for p in
-                     describe_field_groups["raster_band_properties_ex"]}
+            desc2 = {}
+            for p in describe_field_groups["raster_band_properties_ex"]:
+                # self.info("Getting {}".format(p))
+                try:
+                    desc2["{}_{}".format(band, p)] = GetRasterProperties_management(ras, p, band).getOutput(0)
+                except:
+                    desc2["{}_{}".format(band, p)] = None
+
+            # desc2 = {"{}_{}".format(band, p): GetRasterProperties_management(ras, p, band).getOutput(0) for p in describe_field_groups["raster_band_properties_ex"]}
             desc.update(desc2)
 
         # return an ordered dictionary
