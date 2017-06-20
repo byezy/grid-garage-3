@@ -399,7 +399,7 @@ def describe(geodata):
     # if dt == "RasterDataset" and cs:
     #     cs = cs.split(", ")
     #     for c in cs:
-    #         bnd = utils.join_up(geodata, c)
+    #         bnd = join_up_filename(geodata, c)
     #         d = ap.Describe(bnd)
     #         ns = ["raster_band_{0}".format(a) for a in describe_field_groups["raster_band"]]
     #         for n in ns:
