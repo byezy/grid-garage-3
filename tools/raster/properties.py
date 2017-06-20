@@ -6,7 +6,6 @@ from arcpy import Describe, GetRasterProperties_management
 from os.path import join
 from collections import OrderedDict
 
-
 tool_settings = {"label": "Band Properties",
                  "description": "Reports raster band properties",
                  "can_run_background": "True",
@@ -16,13 +15,12 @@ describe_field_groups = dict(
     raster=["bandCount", "compressionType", "format", "permanent", "sensorType"],
     raster_band_properties=["height", "isInteger", "meanCellHeight", "meanCellWidth", "noDataValue", "pixelType", "primaryField", "tableType", "width"],
     raster_band_properties_ex=["MINIMUM", "MAXIMUM", "MEAN", "STD", "UNIQUEVALUECOUNT", "TOP", "LEFT", "RIGHT", "BOTTOM", "CELLSIZEX", "CELLSIZEY", "VALUETYPE",
-                       "COLUMNCOUNT", "ROWCOUNT", "BANDCOUNT", "ANYNODATA", "ALLNODATA", "SENSORNAME", "PRODUCTNAME", "ACQUSITIONDATE", "SOURCETYPE",
-                       "SUNELEVATION", "CLOUDCOVER", "SUNAZIMUTH", "SENSORAZIMUTH", "SENSORELEVATION", "OFFNADIR", "WAVELENGTH"])
+                               "COLUMNCOUNT", "ROWCOUNT", "BANDCOUNT", "ANYNODATA", "ALLNODATA", "SENSORNAME", "PRODUCTNAME", "ACQUSITIONDATE", "SOURCETYPE",
+                               "SUNELEVATION", "CLOUDCOVER", "SUNAZIMUTH", "SENSORAZIMUTH", "SENSORELEVATION", "OFFNADIR", "WAVELENGTH"])
 
 
 @result
 class BandPropetiesRasterTool(BaseTool):
-
     def __init__(self):
 
         BaseTool.__init__(self, tool_settings)
@@ -54,7 +52,6 @@ class BandPropetiesRasterTool(BaseTool):
         r = Describe(ras)
 
         desc = {"raster_{}".format(p): getattr(r, p, None) for p in describe_field_groups["raster"]}
-        self.info(desc)
 
         bands = [b.name for b in getattr(r, "children", [])]
 
@@ -62,9 +59,9 @@ class BandPropetiesRasterTool(BaseTool):
             b = join(ras, band)
             rb = Describe(b)
             desc2 = {"{}_{}".format(band, att): getattr(rb, att, None) for att in describe_field_groups["raster_band_properties"]}
-            self.info(desc2)
             desc.update(desc2)
-            desc2 = {"{}_{}".format(band, p): GetRasterProperties_management(ras, p, band).getOutput(0) for p in describe_field_groups["raster_band_properties_ex"]}
+            desc2 = {"{}_{}".format(band, p): GetRasterProperties_management(ras, p, band).getOutput(0) for p in
+                     describe_field_groups["raster_band_properties_ex"]}
             desc.update(desc2)
 
         # return an ordered dictionary
