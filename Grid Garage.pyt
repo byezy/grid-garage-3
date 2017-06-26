@@ -31,7 +31,7 @@ from tools.raster.set_value_to_null import SetValueToNullRasterTool
 from tools.raster.transform import TransformRasterTool
 from tools.raster.tweak_values import TweakValuesRasterTool
 from tools.raster.properties import BandPropetiesRasterTool
-# from tools.raster.zonal_counts import ZonalCountsRasterTool
+from tools.raster.values_to_points import ValuesToPointsRasterTool
 # metadata tools
 from tools.metadata.audit import AuditMetadataTool
 from tools.metadata.create_tips import CreateTipsTableMetadataTool
@@ -78,8 +78,8 @@ class Toolbox(object):
                         SetValueToNullRasterTool,
                         TransformRasterTool,
                         TweakValuesRasterTool,
-                        BandPropetiesRasterTool}  # ,
-                        # ZonalCountsRasterTool}
+                        BandPropetiesRasterTool ,
+                        ValuesToPointsRasterTool}
 
         metadata_tools = {AuditMetadataTool,
                           CreateTipsTableMetadataTool,
