@@ -61,8 +61,7 @@ class BandPropetiesRasterTool(BaseTool):
             desc2 = {"{}_{}".format(band, att): getattr(rb, att, None) for att in describe_field_groups["raster_band_properties"]}
             desc.update(desc2)
             desc2 = {}
-            for p in describe_field_groups["raster_band_properties_ex"]:
-                # self.info("Getting {}".format(p))
+            for p in describe_field_groups["raster_band_properties_ex"]:  #have to wrap this, UNIQUEVALUECOUNT not present for floats
                 try:
                     desc2["{}_{}".format(band, p)] = GetRasterProperties_management(ras, p, band).getOutput(0)
                 except:

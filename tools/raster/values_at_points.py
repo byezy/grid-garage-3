@@ -72,11 +72,13 @@ class ValuesAtPointsRasterTool(BaseTool):
             xy = "{0} {1}".format(row[0][0], row[0][1])
             res = GetCellValue_management(ras, xy)
             val = res.getOutput(0)
+
             # get the storage
             id_res = self.result_dict.get(oid, None)
             if not id_res:  # init needed
                 id_res = {}
                 self.result_dict[oid] = id_res
+
             # store it
             id_res[r_base] = val
 
