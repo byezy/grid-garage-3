@@ -16,7 +16,7 @@ class ValuesToPointsRasterTool(BaseTool):
     def __init__(self):
 
         BaseTool.__init__(self, tool_settings)
-        self.execution_list = [self.initialise, self.iterate, self.finish]
+        self.execution_list = [self.initialise, self.iterate]
         self.point_rows = None
         self.points_srs = None
         self.result_dict = {}
