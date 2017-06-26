@@ -67,7 +67,7 @@ class ValuesToPointsRasterTool(BaseTool):
 
         pts_out = make_vector_name(self.points, self.result.output_workspace, "", self.output_filename_prefix, self.output_filename_suffix + "_{}".format(r_base))
 
-        self.info("Extracting point values from {} to {}...".format(ras, ras_out))
+        self.info("Extracting point values from {} to {}...".format(ras, pts_out))
 
         ExtractValuesToPoints(self.points, ras, pts_out, self.interpolate, self.add_attributes)
 
