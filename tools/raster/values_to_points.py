@@ -2,7 +2,7 @@ from base.base_tool import BaseTool
 from base.results import result
 from base.utils import make_vector_name, describe, get_search_cursor_rows, validate_geodata
 from base.method_decorators import input_tableview, input_output_table, parameter
-from arcpy import ExtractValuesToPoints
+from arcpy.sa import ExtractValuesToPoints
 from collections import OrderedDict
 
 
