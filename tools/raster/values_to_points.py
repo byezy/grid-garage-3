@@ -3,7 +3,6 @@ from base.results import result
 from base.utils import make_vector_name, describe, get_search_cursor_rows, validate_geodata
 from base.method_decorators import input_tableview, input_output_table, parameter
 from arcpy.sa import ExtractValuesToPoints
-from collections import OrderedDict
 
 
 tool_settings = {"label": "Values to Points",
