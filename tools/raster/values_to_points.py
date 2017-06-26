@@ -1,7 +1,7 @@
 from base.base_tool import BaseTool
 from base.results import result
 from base.utils import make_vector_name, describe, get_search_cursor_rows, validate_geodata
-from base.method_decorators import input_tableview, input_output_table, parameter
+from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter
 from arcpy.sa import ExtractValuesToPoints
 
 
@@ -27,7 +27,7 @@ class ValuesToPointsRasterTool(BaseTool):
     @parameter("points", "Point Features", "GPFeatureLayer", "Required", False, "Input", ["Point"], None, None, None)
     @parameter("interpolate", "Interpolate Values", "GPString", "Optional", False, "Input", ["NONE", "INTERPOLATE"], None, None, None, "Options")
     @parameter("add_attributes", "Add Raster Attributes", "GPString", "Optional", False, "Input", ["VALUE_ONLY", "ALL"], None, None, None, "Options")
-    @input_output_table
+    @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
         return BaseTool.getParameterInfo(self)
