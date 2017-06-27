@@ -43,7 +43,7 @@ class FeaturePercentilesTool(BaseTool):
 
         utils.validate_geodata(feats, vector=True)
 
-        if self.value_field not in arcpy.ListFields(feats):
+        if self.value_field not in [f.name for f in arcpy.ListFields(feats)]:
             raise ValueError("Field '{}' is not in '{}' skipping '{}'".format(self.value_field, arcpy.ListFields(feats), feats))
 
         self.info("Calculating percentiles for {0}".format(feats))
