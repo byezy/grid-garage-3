@@ -58,7 +58,7 @@ class ReclassByThresholdRasterTool(BaseTool):
         #     # reflect
 
 
-        arcpy.ReclassByTable_3d(ras, self.in_remap_table, self.from_value_field, self.to_value_field, self.output_value_field, ras_out, self.missing_values)
+        # arcpy.ReclassByTable_3d(ras, self.in_remap_table, self.from_value_field, self.to_value_field, self.output_value_field, ras_out, self.missing_values)
 
         return {"geodata": ras_out, "source_geodata": ras}
 

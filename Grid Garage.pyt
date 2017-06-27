@@ -77,7 +77,7 @@ class Toolbox(object):
                         ValuesAtPointsRasterTool,
                         ReprojectRasterTool,
                         ReclassByTableRasterTool,
-                        ReclassByThresholdRasterTool
+                        ReclassByThresholdRasterTool,
                         ResampleRasterTool,
                         SetNodataValueRasterTool,
                         SetValueToNullRasterTool,
