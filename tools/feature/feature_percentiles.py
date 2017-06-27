@@ -56,8 +56,9 @@ class FeaturePercentilesTool(BaseTool):
         v = {}
         for i in range(1, 100):
             p = numpy.percentile(arr, i)
-            v[i] = p
-        self.info("ints = {}, percentiles = {}".format(len(v), v))
+            v["pc_{}".format(i)] = p
+
+        self.info(v)
 
         rtn = {"geodata": feats, "source_geodata": feats}
         rtn.update(v)
