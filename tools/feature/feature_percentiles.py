@@ -54,13 +54,11 @@ class FeaturePercentilesTool(BaseTool):
         if self.ndv:
             arr = arr[arr != self.ndv]
 
-        rtn = OrderedDict(("geodata", feats), ("source_geodata", feats))
+        rtn = OrderedDict()
+        rtn["geodata"] = feats
+        rtn["source_geodata"] = feats
         for i in range(1, 100):
             p = numpy.percentile(arr, i)
             rtn["pc_{}".format(i)] = p
-
-        # self.info(rtn)
-
-        # rtn.update(v)
 
         return rtn
