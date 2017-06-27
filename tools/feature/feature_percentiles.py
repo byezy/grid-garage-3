@@ -25,7 +25,7 @@ class FeaturePercentilesTool(BaseTool):
 
     @input_tableview("feature_table", "Table for Features", False, ["feature:geodata:"])
     @parameter("value_field", "Value Field", "GPSTring", "Required", False, "Input", None, None, None, None, None)
-    @parameter("ndv", "No Data Value", "GPLong", "Optional", False, "Input", None, None, None, 10, None)
+    @parameter("ndv", "No Data Value", "GPLong", "Optional", False, "Input", None, None, None, None, None)
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
 
@@ -33,7 +33,7 @@ class FeaturePercentilesTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.percentiles, "raster_table", ["geodata"], return_to_results=True)
+        self.iterate_function_on_tableview(self.percentiles, "feature_table", ["geodata"], return_to_results=True)
 
         return
 
