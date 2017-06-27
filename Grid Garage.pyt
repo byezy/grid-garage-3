@@ -14,6 +14,7 @@ from tools.geodata.list_workspace_tables import ListWorkspaceTablesGeodataTool
 from tools.feature.rasterise_by_table import RasteriseByTableTool
 from tools.feature.copy import CopyFeatureTool
 from tools.feature.clip import ClipFeatureTool
+from tools.feature.feature_percentiles import FeaturePercentilesTool
 # raster tools
 from tools.raster.aggregate import AggregateRasterTool
 from tools.raster.block_statistics import BlockStatisticsRasterTool
@@ -62,7 +63,8 @@ class Toolbox(object):
 
         feature_tools = {RasteriseByTableTool,
                          CopyFeatureTool,
-                         ClipFeatureTool}
+                         ClipFeatureTool,
+                         FeaturePercentilesTool}
 
         raster_tools = {AggregateRasterTool,
                         BlockStatisticsRasterTool,
