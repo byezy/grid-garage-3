@@ -44,7 +44,7 @@ class FeaturePercentilesTool(BaseTool):
         utils.validate_geodata(feats, vector=True)
 
         if self.value_field not in arcpy.ListFields(feats):
-            raise ValueError("Field '{}' is not in '{}'".format(self.value_field, feats))
+            raise ValueError("Field '{}' is not in '{}' skipping '{}'".format(self.value_field, arcpy.ListFields(feats), feats))
 
         # ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self. output_filename_suffix)
 
