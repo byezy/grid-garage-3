@@ -26,6 +26,7 @@ from tools.raster.lookup_by_table import LookupByTableRasterTool
 from tools.raster.values_at_points import ValuesAtPointsRasterTool
 from tools.raster.reproject import ReprojectRasterTool
 from tools.raster.reclass_by_table import ReclassByTableRasterTool
+from tools.raster.reclass_by_threshold import ReclassByThresholdRasterTool
 from tools.raster.resample import ResampleRasterTool
 from tools.raster.set_no_data_value import SetNodataValueRasterTool
 from tools.raster.set_value_to_null import SetValueToNullRasterTool
@@ -76,6 +77,7 @@ class Toolbox(object):
                         ValuesAtPointsRasterTool,
                         ReprojectRasterTool,
                         ReclassByTableRasterTool,
+                        ReclassByThresholdRasterTool
                         ResampleRasterTool,
                         SetNodataValueRasterTool,
                         SetValueToNullRasterTool,
