@@ -4,6 +4,7 @@ from base import utils
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter
 import arcpy
 import numpy
+from collections import OrderedDict
 
 
 tool_settings = {"label": "Field Percentiles",
@@ -53,14 +54,13 @@ class FeaturePercentilesTool(BaseTool):
         if self.ndv:
             arr = arr[arr != self.ndv]
 
-        v = {}
+        rtn = OrderedDict(("geodata", feats), ("source_geodata", feats))
         for i in range(1, 100):
             p = numpy.percentile(arr, i)
-            v["pc_{}".format(i)] = p
+            rtn["pc_{}".format(i)] = p
 
-        self.info(v)
+        # self.info(rtn)
 
-        rtn = {"geodata": feats, "source_geodata": feats}
-        rtn.update(v)
+        # rtn.update(v)
 
         return rtn
