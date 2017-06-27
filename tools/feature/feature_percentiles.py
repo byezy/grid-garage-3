@@ -6,8 +6,8 @@ import arcpy
 import numpy
 
 
-tool_settings = {"label": "Slice",
-                 "description": "Slice raster",
+tool_settings = {"label": "Field Percentiles",
+                 "description": "Calculate numeric field percentiles",
                  "can_run_background": "True",
                  "category": "Raster"}
 
@@ -24,7 +24,7 @@ class FeaturePercentilesTool(BaseTool):
         return
 
     @input_tableview("feature_table", "Table for Features", False, ["feature:geodata:"])
-    @parameter("value_field", "Value Field", "Field", "Required", False, "Input", None, None, ["feature_table"], 10, None)
+    @parameter("value_field", "Value Field", "GPSTring", "Required", False, "Input", None, None, None, None, None)
     @parameter("ndv", "No Data Value", "GPLong", "Optional", False, "Input", None, None, None, 10, None)
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
@@ -39,19 +39,21 @@ class FeaturePercentilesTool(BaseTool):
 
     def percentiles(self, data):
 
-        ras = data["geodata"]
+        feats = data["geodata"]
 
-        utils.validate_geodata(ras, raster=True)
+        utils.validate_geodata(feats, vector=True)
 
-        ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self. output_filename_suffix)
+        if self.value_field not in arcpy.ListFields(feats):
+            raise ValueError("Field '{}' is not in '{}'".format(self.value_field, feats))
 
-        self.info("Calculating percentiles {0} -->> {1}...".format(ras, ras_out))
+        # ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self. output_filename_suffix)
 
-        arr = arcpy.da.FeatureClassToNumPyArray(ras, self.value_field).astype(numpy.float32)
+        self.info("Calculating percentiles for {0}".format(feats))
+
+        arr = arcpy.da.FeatureClassToNumPyArray(feats, self.value_field).astype(numpy.float32)
 
         if self.ndv:
             arr = arr[arr != self.ndv]
-        # messages.addMessage(arr)
 
         v = {}
         for i in range(1, 99):
@@ -59,6 +61,6 @@ class FeaturePercentilesTool(BaseTool):
             v[i] = p
         self.info("ints = {}, percentiles = {}".format(len(v), v))
 
-        rtn = {"geodata": ras_out, "source_geodata": ras}.update(v)
+        rtn = {"geodata": feats, "source_geodata": feats}.update(v)
 
         return rtn
