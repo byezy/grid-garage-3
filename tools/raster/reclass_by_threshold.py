@@ -3,6 +3,8 @@ from base.results import result
 from base import utils
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter, data_nodata, raster_formats
 import arcpy
+from collections import OrderedDict
+
 
 tool_settings = {"label": "Reclass by Threshold",
                  "description": "Reclass by threshold values found in fields...",
@@ -25,7 +27,8 @@ class ReclassByThresholdRasterTool(BaseTool):
 
         return
 
-    @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:"])
+    @input_tableview("raster_table", "Table for Rasters", False, ["thresholds:thresholds:", "raster:geodata:"])
+    @input_tableview("geodata_table", "Table for Geodata", False, ["new name:candidate_name:", "geodata:geodata:"])
     @parameter("threshold_field", "Field holding threshold values", "Field", "Required", False, "Input", None, None, ["raster_table"], None, None)
     @parameter("raster_format", "Format for output rasters", "GPString", "Required", False, "Input", raster_formats, None, None, "Esri Grid")
     @input_output_table_with_output_affixes
@@ -42,7 +45,11 @@ class ReclassByThresholdRasterTool(BaseTool):
 
     def reclass(self, data):
 
-        self.info(data)
+        parameter_dictionary = OrderedDict([(p.DisplayName, p.valueAsText) for p in self.parameters])
+        parameter_summary = ", ".join(["{}: {}".format(k, v) for k, v in parameter_dictionary.iteritems()])
+        self.info("Parameter summary: {}".format(parameter_summary))
+
+        self.info("data : {}".format(data))
         ras = data["geodata"]
 
         utils.validate_geodata(ras, raster=True)

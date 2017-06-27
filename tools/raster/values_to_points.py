@@ -71,4 +71,4 @@ class ValuesToPointsRasterTool(BaseTool):
 
         ExtractValuesToPoints(self.points, ras, pts_out, self.interpolate, self.add_attributes)
 
-        return {"geodata": pts_out, "source_geodata": "{}, {}".format(self.points, ras)}
+        return {"geodata": pts_out, "source_points": self.points, "source_raster": ras}
