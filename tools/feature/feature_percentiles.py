@@ -54,11 +54,12 @@ class FeaturePercentilesTool(BaseTool):
             arr = arr[arr != self.ndv]
 
         v = {}
-        for i in range(1, 99):
+        for i in range(1, 100):
             p = numpy.percentile(arr, i)
             v[i] = p
         self.info("ints = {}, percentiles = {}".format(len(v), v))
 
-        rtn = {"geodata": feats, "source_geodata": feats}.update(v)
+        rtn = {"geodata": feats, "source_geodata": feats}
+        rtn.update(v)
 
         return rtn
