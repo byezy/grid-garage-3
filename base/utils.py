@@ -2,7 +2,6 @@ import datetime
 import os
 from collections import OrderedDict
 from re import compile
-# import base.log
 import arcpy as ap
 import collections
 import csv

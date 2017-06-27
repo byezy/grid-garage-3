@@ -2,7 +2,8 @@ from base.base_tool import BaseTool
 from base.results import result
 from base import utils
 from base.method_decorators import input_tableview, input_output_table, parameter
-from arcpy import GetCellValue_management
+from arcpy import GetCellValue_management, GetCount_management
+import arcpy.sa
 from collections import OrderedDict
 
 
@@ -40,9 +41,10 @@ class ValuesAtPointsRasterTool(BaseTool):
         if "unknown" in self.points_srs.lower():
             raise ValueError("Point dataset '{0}'has unknown spatial reference system ({1})".format(source, self.points_srs))
 
-        self.point_rows = utils.get_search_cursor_rows(self.points, ("SHAPE@XY", "OID@"))
-
-        self.info("{0} points found in '{1}'".format(len(self.point_rows), self.points))
+        c = GetCount_management(self.points).getOutput(0)
+        # self.point_rows = utils.get_search_cursor_rows(self.points, ("SHAPE@XY", "OID@"))
+        self.point_rows = arcpy.sa.SearchCursor(self.points, ("SHAPE@XY", "OID@"))
+        self.info("{0} points found in '{1}'".format(c, self.points))
 
         return
 
