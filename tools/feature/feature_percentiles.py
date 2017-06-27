@@ -46,8 +46,6 @@ class FeaturePercentilesTool(BaseTool):
         if self.value_field not in arcpy.ListFields(feats):
             raise ValueError("Field '{}' is not in '{}' skipping '{}'".format(self.value_field, arcpy.ListFields(feats), feats))
 
-        # ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self. output_filename_suffix)
-
         self.info("Calculating percentiles for {0}".format(feats))
 
         arr = arcpy.da.FeatureClassToNumPyArray(feats, self.value_field).astype(numpy.float32)
