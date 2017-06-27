@@ -23,7 +23,7 @@ class SliceRasterTool(BaseTool):
 
     @input_tableview("raster_table", "Table for Rasters", False, ["raster:geodata:"])
     @parameter("raster_format", "Output Raster Format", "GPString", "Optional", False, "Input", raster_formats, None, None, "Esri Grid")
-    @parameter("num_zones", "Number of Zones", "GPLong", "Required", False, "Input", data_nodata, None, None, data_nodata[0], "Options")
+    @parameter("num_zones", "Number of Zones", "GPLong", "Required", False, "Input", None, None, None, data_nodata[0], "Options")
     @parameter("slice_type", "Type of Slice", "GPString", "Required", False, "Input", ["EQUAL_INTERVAL", "EQUAL_AREA", "NATURAL_BREAKS"], None, None, None)
     @parameter("base_output_zone", "Base Output Zone", "GPLong", "Required", False, "Input", None, None, None, 1, "Options")
     @input_output_table_with_output_affixes
