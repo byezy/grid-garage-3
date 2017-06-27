@@ -9,7 +9,7 @@ import numpy
 tool_settings = {"label": "Field Percentiles",
                  "description": "Calculate numeric field percentiles",
                  "can_run_background": "True",
-                 "category": "Raster"}
+                 "category": "Feature"}
 
 
 @result
