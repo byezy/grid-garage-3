@@ -72,6 +72,7 @@ class ValuesToPointsRasterTool(BaseTool):
         self.info("Extracting point values from {} to {}...".format(ras, pts_out))
 
         if qry:
+            self.info("\tQuerying features '{}'".format(qry))
             if Exists("tmp"):
                 Delete_management("tmp")
             MakeFeatureLayer_management(self.points, "tmp", qry)

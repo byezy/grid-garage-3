@@ -14,6 +14,7 @@ from contextlib import contextmanager
 from functools import wraps
 import arcpy
 import logging
+from collections import OrderedDict
 
 
 def time_stamp(fmt='%Y%m%d_%H%M%S'):
@@ -388,6 +389,10 @@ class BaseTool(object):
         self.messages = messages
 
         self.configure_logging()
+
+        parameter_dictionary = OrderedDict([(p.DisplayName, p.valueAsText) for p in self.parameters])
+        parameter_summary = ", ".join(["{}: {}".format(k, v) for k, v in parameter_dictionary.iteritems()])
+        self.info("Parameter summary: {}".format(parameter_summary))
 
         for k, v in self.get_parameter_dict().iteritems():
             setattr(self, k, v)

@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 
 tool_settings = {"label": "Field Percentiles",
-                 "description": "Calculate numeric field percentiles",
+                 "description": "Calculate numeric feature field percentiles",
                  "can_run_background": "True",
                  "category": "Feature"}
 
@@ -48,11 +48,13 @@ class FeaturePercentilesTool(BaseTool):
         if self.value_field not in [f.name for f in arcpy.ListFields(feats)]:
             raise ValueError("Field '{}' is not in '{}' skipping '{}'".format(self.value_field, arcpy.ListFields(feats), feats))
 
-        self.info("Calculating percentiles for {0}".format(feats))
+        self.info("Calculating percentiles for {}".format(feats))
 
-        arr = arcpy.da.FeatureClassToNumPyArray(feats, self.value_field).astype(numpy.float32)
+        arr = arcpy.da.FeatureClassToNumPyArray(feats, self.value_field, skip_nulls=True)
+        arr = arr.astype(numpy.float32)
 
         if self.ndv:
+            self.info("Removing No Data values from array...".format(feats))
             arr = arr[arr != self.ndv]
 
         rtn = OrderedDict()
@@ -60,6 +62,7 @@ class FeaturePercentilesTool(BaseTool):
         rtn["source_geodata"] = feats
         rtn["source_raster"] = src_ras
 
+        self.info("Computing percentiles")
         for i in range(1, 100):
             p = numpy.percentile(arr, i)
             rtn["pc_{}".format(i)] = p
