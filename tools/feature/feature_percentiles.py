@@ -24,7 +24,7 @@ class FeaturePercentilesTool(BaseTool):
 
         return
 
-    @input_tableview("feature_table", "Table for Features", False, ["feature:geodata:"])
+    @input_tableview("feature_table", "Table for Features", False, ["source raster:source_raster:", "feature:geodata:"])
     @parameter("value_field", "Value Field", "GPSTring", "Required", False, "Input", None, None, None, None, None)
     @parameter("ndv", "No Data Value", "GPLong", "Optional", False, "Input", None, None, None, None, None)
     @input_output_table_with_output_affixes
@@ -34,13 +34,14 @@ class FeaturePercentilesTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.percentiles, "feature_table", ["geodata"], return_to_results=True)
+        self.iterate_function_on_tableview(self.percentiles, "feature_table", ["geodata", "source_raster"], return_to_results=True)
 
         return
 
     def percentiles(self, data):
 
         feats = data["geodata"]
+        src_ras = data["source_raster"]
 
         utils.validate_geodata(feats, vector=True)
 
@@ -57,6 +58,7 @@ class FeaturePercentilesTool(BaseTool):
         rtn = OrderedDict()
         rtn["geodata"] = feats
         rtn["source_geodata"] = feats
+        rtn["source_raster"] = src_ras
         for i in range(1, 100):
             p = numpy.percentile(arr, i)
             rtn["pc_{}".format(i)] = p
