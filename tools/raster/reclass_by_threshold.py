@@ -40,7 +40,7 @@ class ReclassByThresholdRasterTool(BaseTool):
             self.info(self.thresholds)
         except:
             pass
-        self.iterate_function_on_tableview(self.reclass, "raster_table", ["geodata"], return_to_results=True)
+        self.iterate_function_on_tableview(self.reclass, "raster_table", ["geodata", "thresholds"], return_to_results=True)
 
         return
 
