@@ -3,6 +3,7 @@ from base.results import result
 from base.utils import make_vector_name, describe, get_search_cursor_rows, validate_geodata
 from base.method_decorators import input_tableview, input_output_table_with_output_affixes, parameter
 from arcpy.sa import ExtractValuesToPoints
+from arcpy import MakeFeatureLayer_management, Exists, Delete_management
 
 
 tool_settings = {"label": "Values to Points",
@@ -23,7 +24,7 @@ class ValuesToPointsRasterTool(BaseTool):
 
         return
 
-    @input_tableview("raster_table", "Table of Rasters", False, ["raster:geodata:"])
+    @input_tableview("raster_table", "Table of Rasters", False, ["query:query:Optional", "raster:geodata:"])
     @parameter("points", "Point Features", "GPFeatureLayer", "Required", False, "Input", ["Point"], None, None, None)
     @parameter("interpolate", "Interpolate Values", "GPString", "Optional", False, "Input", ["NONE", "INTERPOLATE"], None, None, None, "Options")
     @parameter("add_attributes", "Add Raster Attributes", "GPString", "Optional", False, "Input", ["VALUE_ONLY", "ALL"], None, None, None, "Options")
@@ -49,13 +50,14 @@ class ValuesToPointsRasterTool(BaseTool):
 
     def iterate(self):
 
-        self.iterate_function_on_tableview(self.process, "raster_table", ["geodata"], return_to_results=True)
+        self.iterate_function_on_tableview(self.process, "raster_table", ["geodata", "query"], return_to_results=True)
 
         return
 
     def process(self, data):
 
         ras = data["geodata"]
+        qry = data["query"]
         validate_geodata(ras, raster=True, srs_known=True)
 
         d = describe(ras)
@@ -69,6 +71,12 @@ class ValuesToPointsRasterTool(BaseTool):
 
         self.info("Extracting point values from {} to {}...".format(ras, pts_out))
 
-        ExtractValuesToPoints(self.points, ras, pts_out, self.interpolate, self.add_attributes)
+        if qry:
+            if Exists("tmp"):
+                Delete_management("tmp")
+            MakeFeatureLayer_management(self.points, "tmp", qry)
+            ExtractValuesToPoints("tmp", ras, pts_out, self.interpolate, self.add_attributes)
+        else:
+            ExtractValuesToPoints(self.points, ras, pts_out, self.interpolate, self.add_attributes)
 
         return {"geodata": pts_out, "source_points": self.points, "source_raster": ras}

@@ -57,7 +57,11 @@ class ReclassByThresholdRasterTool(BaseTool):
 
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self. output_filename_suffix)
 
-        self.info("Reclassifying {0} -->> {1}...".format(ras, ras_out))
+        self.info("Reclassifying {} -->> {}...".format(ras, ras_out))
+        self.info("\nUpdating RAT...")
+        arcpy.BuildRasterAttributeTable_management(ras, "Overwrite")
+        self.info("\nUpdating statistics...")
+        arcpy.CalculateStatistics_management(ras, "Overwrite")
 
         # self.threshold_field = self.threshold_field.split(",")
         # for field in self.threshold_fields:
@@ -65,6 +69,11 @@ class ReclassByThresholdRasterTool(BaseTool):
         #     # sort values
         #     # reflect
 
+        # Reclassify_3d(in_raster, reclass_field, remap, out_raster, {missing_values})
+        arcpy.Reclassify_3d()
+        # arcpy.Reclassify_3d("C:/data/landuse", "VALUE",
+        #                     "1 9;2 8;3 1;4 6;5 3;6 2;7 1",
+        #                     "C:/output/outremap", "DATA")
 
         # arcpy.ReclassByTable_3d(ras, self.in_remap_table, self.from_value_field, self.to_value_field, self.output_value_field, ras_out, self.missing_values)
 
