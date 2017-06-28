@@ -28,7 +28,6 @@ class ReclassByThresholdRasterTool(BaseTool):
         return
 
     @input_tableview("raster_table", "Table for Rasters", False, ["thresholds:thresholds:", "raster:geodata:"])
-    @parameter("threshold_field", "Field holding threshold values", "Field", "Required", False, "Input", None, None, ["raster_table"], None, None)
     @parameter("raster_format", "Format for output rasters", "GPString", "Required", False, "Input", raster_formats, None, None, "Esri Grid")
     @input_output_table_with_output_affixes
     def getParameterInfo(self):
