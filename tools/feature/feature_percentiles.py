@@ -59,6 +59,7 @@ class FeaturePercentilesTool(BaseTool):
         rtn["geodata"] = feats
         rtn["source_geodata"] = feats
         rtn["source_raster"] = src_ras
+
         for i in range(1, 100):
             p = numpy.percentile(arr, i)
             rtn["pc_{}".format(i)] = p
