@@ -35,6 +35,7 @@ from tools.raster.tweak_values import TweakValuesRasterTool
 from tools.raster.properties import BandPropetiesRasterTool
 from tools.raster.values_to_points import ValuesToPointsRasterTool
 from tools.raster.slice import SliceRasterTool
+from tools.raster.zonal_stats_as_table import ZonalStatisticsAsTableTool
 # metadata tools
 from tools.metadata.audit import AuditMetadataTool
 from tools.metadata.create_tips import CreateTipsTableMetadataTool
@@ -85,7 +86,8 @@ class Toolbox(object):
                         TweakValuesRasterTool,
                         BandPropetiesRasterTool,
                         ValuesToPointsRasterTool,
-                        SliceRasterTool}
+                        SliceRasterTool,
+                        ZonalStatisticsAsTableTool}
 
         metadata_tools = {AuditMetadataTool,
                           CreateTipsTableMetadataTool,

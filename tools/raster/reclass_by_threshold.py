@@ -21,10 +21,6 @@ class ReclassByThresholdRasterTool(BaseTool):
 
         self.execution_list = [self.iterate]
 
-        # self.from_value_field = None
-        # self.to_value_field = None
-        # self.output_value_field = None
-
         return
 
     @input_tableview("raster_table", "Table for Rasters", False, ["thresholds:thresholds:", "raster:geodata:"])
@@ -44,6 +40,72 @@ class ReclassByThresholdRasterTool(BaseTool):
 
         return
 
+    def make_remap(self, value, minv, maxv):
+        self.info(locals())
+
+        if not value:
+            raise ValueError("No threshold string")
+
+        thresholds = value.split(",")
+
+        if not thresholds:
+            raise ValueError("\tNo thresholds set")
+
+        thresholds = sorted([float(t.strip()) for t in thresholds])
+        # thresholds = sorted(thresholds + [minv, maxv])
+        self.info("sorted thresholds are {}".format(thresholds))
+        # thresholds = [(t, t + 0.0001, i) for i, t in enumerate(thresholds, start=1)]
+        # # thresholds = [(t, t + 0.0001, i) for i, t in enumerate(thresholds, start=1)]
+        # self.info("endpoint thresholds are {}".format(thresholds))
+        # thresholds = sorted(thresholds + [minv, maxv])
+        # self.info("endpoint thresholds LIST are {}".format(thresholds))
+
+        mint, maxt = min(thresholds), max(thresholds)
+
+        if mint < minv:
+            raise ValueError("\tMin threshold under min value {} < {}".format(mint, minv))
+        if maxt > maxv:
+            raise ValueError("\tMax threshold over max value {} > {}".format(maxt, maxv))
+
+        # thresholds = [(t, t + 0.0001, i) for i, t in enumerate(thresholds, start=1)]
+        # thresholds = [item for t in thresholds for item in t]
+
+        # v = [min] + thresholds + [max]
+        # thresholds = ["{} {} {}".format((t, t + 1)
+        # flat_list = [item for sublist in l for item in sublist]
+        # 93, 134
+        # 93, 94, 134, 135
+        # 0, 93 , 134, 1000
+        # thresholds2 = [(v, v + 0.0001) for v in thresholds]
+        # self.info(thresholds2)
+        #
+        # thresholds2 = [minv] + thresholds2 + [maxv]
+        # self.info(thresholds2)
+        delta = 0.0001
+        thresholds2 = [(minv, thresholds[0], 1), (thresholds[len(thresholds)-1], maxv, thresholds[len(thresholds)-1])]
+        # for t in thresholds:
+        for i, t in enumerate(thresholds):
+            thresholds2.append("{} {} {}".format(from_v, to_v, i + 1))
+            # if i == 0:
+            #     from_v = minv
+            # else:
+            #     from_v = thresholds[i-1] + delta
+            #
+            # if i == (len(thresholds)+1):
+            #     to_v = maxv
+            # else:
+            #     to_v = thresholds[i]
+
+            thresholds2.append("{} {} {}".format(from_v, to_v, i + 1))
+        # thresholds2 = []
+        # for t in thresholds:
+        #     thresholds2.append(t)
+        #     thresholds2.append(t+1)
+        self.info(thresholds2)
+        remap = ";".join(thresholds2)
+        self.info(remap)
+        return thresholds
+
     def reclass(self, data):
 
         parameter_dictionary = OrderedDict([(p.DisplayName, p.valueAsText) for p in self.parameters])
@@ -58,25 +120,42 @@ class ReclassByThresholdRasterTool(BaseTool):
         ras_out = utils.make_raster_name(ras, self.result.output_workspace, self.raster_format, self.output_filename_prefix, self. output_filename_suffix)
 
         self.info("Reclassifying {} -->> {}...".format(ras, ras_out))
-        self.info("\nUpdating RAT...")
+
+        remap = data["thresholds"]
+        if not remap:
+            raise ValueError("\tNo thresholds set")
+
+        self.info("\tUpdating RAT...")
         arcpy.BuildRasterAttributeTable_management(ras, "Overwrite")
-        self.info("\nUpdating statistics...")
-        arcpy.CalculateStatistics_management(ras, "Overwrite")
 
-        # self.threshold_field = self.threshold_field.split(",")
-        # for field in self.threshold_fields:
-        #     # get field values
-        #     # sort values
-        #     # reflect
+        self.info("\tUpdating statistics...")
+        arcpy.CalculateStatistics_management(ras)
 
-        # Reclassify_3d(in_raster, reclass_field, remap, out_raster, {missing_values})
-        arcpy.Reclassify_3d()
-        # arcpy.Reclassify_3d("C:/data/landuse", "VALUE",
-        #                     "1 9;2 8;3 1;4 6;5 3;6 2;7 1",
-        #                     "C:/output/outremap", "DATA")
+        # "0 5 1;5.01 7.5 2;7.5 10 3"  from, to, new
+        minv = float(arcpy.GetRasterProperties_management(ras, "MINIMUM").getOutput(0))
+        maxv = float(arcpy.GetRasterProperties_management(ras, "MAXIMUM").getOutput(0))
+        mean = float(arcpy.GetRasterProperties_management(ras, "MEAN").getOutput(0))
+        std = float(arcpy.GetRasterProperties_management(ras, "STD").getOutput(0))
 
-        # arcpy.ReclassByTable_3d(ras, self.in_remap_table, self.from_value_field, self.to_value_field, self.output_value_field, ras_out, self.missing_values)
+        # remap = self.make_remap(data["thresholds"], minv, maxv)
+        remap = remap.replace("MIN", str(minv)).replace("MAX", str(maxv))
 
-        return {"geodata": ras_out, "source_geodata": ras}
+        self.info([ras, "Value", remap, ras_out, "NODATA"])
+        arcpy.Reclassify_3d(ras, "Value", remap, ras_out, "NODATA")
 
-# "http://desktop.arcgis.com/en/arcmap/latest/tools/3d-analyst-toolbox/reclass-by-table.htm"
+        # AddField_management(in_table, field_name, field_type, {field_precision}, {field_scale}, {field_length}, {field_alias}, {field_is_nullable},
+        #                     {field_is_required}, {field_domain})
+        arcpy.AddField_management(ras_out, "asdst_value", "TEXT")
+
+        v = ["no", "Low", "Medium", "High"]
+        with arcpy.da.UpdateCursor(ras_out, ["asdst_value", "Value"]) as cursor:
+            for row in cursor:
+                row[0] = v[row[1]]
+                cursor.updateRow(row)
+
+                # arcpy.Reclassify_3d("C:/data/landuse", "VALUE",
+    #                     "1 9;2 8;3 1;4 6;5 3;6 2;7 1",
+    #                     "C:/output/outremap", "DATA")
+
+        return {"geodata": ras_out, "source_geodata": ras, "min_max_mean_std": "{}_{}_{}_{}".format(minv, maxv, mean, std), "remap": remap}
+
