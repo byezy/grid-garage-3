@@ -42,9 +42,9 @@ class RasteriseByTableTool(BaseTool):
 
         utils.validate_geodata(feat_ds, vector=True)
 
-        fields_string = data["table_fields"].strip().strip("[").strip("]").strip("'")
+        fields_string = data["table_fields"].strip().strip("[").strip("]")
         try:
-            target_fields = [field.strip() for field in fields_string.split(",")]
+            target_fields = [field.strip().strip("'").strip('"') for field in fields_string.split(",")]
         except:
             raise ValueError("Could not evaluate fields string '{0}'".format(fields_string))
 
